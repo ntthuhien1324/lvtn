@@ -2,17 +2,15 @@
 
 namespace App\Admin\Controllers;
 
-use App\Models\HocKy;
+use App\Models\NhomMonHoc;
 use App\Http\Controllers\Controller;
-use App\Models\MonHoc;
-use App\Models\NamHoc;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
-use Encore\Admin\Layout\Content;
 use App\Admin\Extensions\Grid;
-use App\Admin\Extensions\Show;
+use Encore\Admin\Layout\Content;
+use Encore\Admin\Show;
 
-class HocKyController extends Controller
+class NhomMonHocController extends Controller
 {
     use HasResourceActions;
 
@@ -25,7 +23,7 @@ class HocKyController extends Controller
     public function index(Content $content)
     {
         return $content
-            ->header('Học kỳ')
+            ->header('Nhóm môn học')
             ->description('Danh sách')
             ->body($this->grid());
     }
@@ -39,10 +37,10 @@ class HocKyController extends Controller
      */
     public function show($id, Content $content)
     {
-        $tenHocKy = HocKy::find($id)->ten;
+        $tenNhomMonHoc = NhomMonHoc::find($id)->ten;
         return $content
-            ->header('Học kỳ')
-            ->description($tenHocKy)
+            ->header('Chi tiết')
+            ->description($tenNhomMonHoc)
             ->body($this->detail($id));
     }
 
@@ -55,10 +53,10 @@ class HocKyController extends Controller
      */
     public function edit($id, Content $content)
     {
-        $tenHocKy = HocKy::find($id)->ten;
+        $tenNhomMonHoc = NhomMonHoc::find($id)->ten;
         return $content
-            ->header('Edit')
-            ->description($tenHocKy)
+            ->header('Sửa')
+            ->description($tenNhomMonHoc)
             ->body($this->form()->edit($id));
     }
 
@@ -72,7 +70,7 @@ class HocKyController extends Controller
     {
         return $content
             ->header('Thêm')
-            ->description('Học kỳ')
+            ->description('Nhóm môn học')
             ->body($this->form());
     }
 
@@ -83,13 +81,10 @@ class HocKyController extends Controller
      */
     protected function grid()
     {
-        $grid = new Grid(new HocKy);
+        $grid = new Grid(new NhomMonHoc);
 
         $grid->id('ID');
-        $grid->ten('Tên học kỳ');
-        $grid->id_nam_hoc('Tên năm học')->display(function () {
-            return $this->namHoc->ten;
-        });
+        $grid->ten('Nhóm môn học');
         $grid->created_at('Thời gian tạo');
         $grid->updated_at('Thời gian cập nhật');
 
@@ -104,11 +99,10 @@ class HocKyController extends Controller
      */
     protected function detail($id)
     {
-        $show = new Show(HocKy::findOrFail($id));
+        $show = new Show(NhomMonHoc::findOrFail($id));
 
         $show->id('ID');
-        $show->ten('Tên học kỳ');
-        $show->id_nam_hoc('Tên năm học');
+        $show->ten('Nhóm môn học');
         $show->created_at('Thời gian tạo');
         $show->updated_at('Thời gian cập nhật');
 
@@ -122,13 +116,10 @@ class HocKyController extends Controller
      */
     protected function form()
     {
-        $form = new Form(new HocKy);
+        $form = new Form(new NhomMonHoc);
 
         $form->hidden('id','ID');
-        $form->text('ten','Tên học kỳ')->rules('required');
-        $form->select('id_nam_hoc','Tên năm học')->options(NamHoc::all()->pluck('ten','id'))
-            ->rules('required');
-        $form->listbox('monHoc', 'Môn học')->options(MonHoc::all()->pluck('ten', 'id'));
+        $form->text('ten','Tên nhóm môn học');
         $form->hidden('Created at');
         $form->hidden('Updated at');
 

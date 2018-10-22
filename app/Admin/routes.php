@@ -26,6 +26,8 @@ Route::group([
 
     //môn học
     $router->resource('monhoc',MonHocController::class);
+    //nhóm môn học
+    $router->resource('nhommonhoc',NhomMonHocController::class);
 
     //tỉ lệ điểm
     $router->resource('tilediem',TiLeDiemController::class);

@@ -4,6 +4,7 @@ namespace App\Admin\Controllers;
 
 use App\Models\MonHoc;
 use App\Http\Controllers\Controller;
+use App\Models\NhomMonHoc;
 use App\Models\TiLeDiem;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
@@ -128,10 +129,14 @@ class MonHocController extends Controller
         $form = new Form(new MonHoc);
 
         $form->hidden('id','ID');
+        $form->text('ma_mon_hoc','Mã môn học')->rules('required');
         $form->text('ten','Tên môn học')->rules('required');
         $form->number('so_tin_chi','Số tín chỉ')->rules('numeric|min:1|max:8');
         $form->select('id_ti_le_diem','Tỉ lệ điểm')
             ->options(TiLeDiem::all()->pluck('ten','id'))
+            ->rules('required');
+        $form->multipleSelect('nhomMonHoc','Nhóm môn học')
+            ->options(NhomMonHoc::all()->pluck('ten','id'))
             ->rules('required');
         $form->hidden('Created at');
         $form->hidden('Updated at');
