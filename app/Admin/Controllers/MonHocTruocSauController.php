@@ -3,7 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Models\MonHoc;
-use App\Models\MonHocSongSong;
+use App\Models\MonHocTruocSau;
 use App\Http\Controllers\Controller;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
@@ -12,7 +12,7 @@ use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
 use Illuminate\Support\MessageBag;
 
-class MonHocSongSongController extends Controller
+class MonHocTruocSauController extends Controller
 {
     use HasResourceActions;
 
@@ -25,8 +25,8 @@ class MonHocSongSongController extends Controller
     public function index(Content $content)
     {
         return $content
-            ->header('Môn học song song')
-            ->description('Danh sách')
+            ->header('Môn học trước sau')
+            ->description('Danh sách\'')
             ->body($this->grid());
     }
 
@@ -69,7 +69,7 @@ class MonHocSongSongController extends Controller
     public function create(Content $content)
     {
         return $content
-            ->header('Thêm môn học song song')
+            ->header('Thêm môn học trước - sau')
 //            ->description('description')
             ->body($this->form());
     }
@@ -81,15 +81,15 @@ class MonHocSongSongController extends Controller
      */
     protected function grid()
     {
-        $grid = new Grid(new MonHocSongSong);
+        $grid = new Grid(new MonHocTruocSau);
 
         $grid->id('ID');
-        $grid->id_mon_hoc_1('Môn học 1')
+        $grid->id_mon_hoc_truoc('Môn học trước')
             ->display(function ($idMonHoc) {
                 $tenMonHoc = MonHoc::find($idMonHoc)->ten;
                 return '<a href="/admin/monhoc/' . $idMonHoc . '">'.$tenMonHoc.'</a>';
             });
-        $grid->id_mon_hoc_2('Môn học 2')
+        $grid->id_mon_hoc_sau('Môn học sau')
             ->display(function ($idMonHoc) {
                 $tenMonHoc = MonHoc::find($idMonHoc)->ten;
                 return '<a href="/admin/monhoc/' . $idMonHoc . '">'.$tenMonHoc.'</a>';
@@ -108,22 +108,21 @@ class MonHocSongSongController extends Controller
      */
     protected function detail($id)
     {
-        $show = new Show(MonHocSongSong::findOrFail($id));
+        $show = new Show(MonHocTruocSau::findOrFail($id));
 
         $show->id('ID');
-        $show->id_mon_hoc_1('Môn học 1')
+        $show->id_mon_hoc_truoc('Môn học trước')
             ->as(function ($idMonHoc) {
                 $tenMonHoc = MonHoc::find($idMonHoc)->ten;
                 return $tenMonHoc;
             });
-        $show->id_mon_hoc_2('Môn học 2')
+        $show->id_mon_hoc_sau('Môn học sau')
             ->as(function ($idMonHoc) {
                 $tenMonHoc = MonHoc::find($idMonHoc)->ten;
                 return $tenMonHoc;
             });
         $show->created_at('Thời gian tạo');
         $show->updated_at('Thời gian cập nhật');
-
 
         return $show;
     }
@@ -135,17 +134,17 @@ class MonHocSongSongController extends Controller
      */
     protected function form()
     {
-        $form = new Form(new MonHocSongSong);
+        $form = new Form(new MonHocTruocSau);
 
         $form->hidden('id','ID');
         $monHoc = MonHoc::all()->sortByDesc('ten')->pluck('ten','id');
-        $form->select('id_mon_hoc_1', 'Môn học 1')->options($monHoc)->rules('required');
-        $form->select('id_mon_hoc_2', 'Môn học 2')->options($monHoc)->rules('required');
-        $form->saving(function (Form $form){
-            if($form->id_mon_hoc_1 == $form->id_mon_hoc_2 ) {
+        $form->select('id_mon_hoc_truoc','Môn học trước')->options($monHoc)->rules('required');
+        $form->select('id_mon_hoc_sau','Môn học sau')->options($monHoc)->rules('required');
+        $form->saving(function (Form $form) {
+            if($form->id_mon_hoc_truoc == $form->id_mon_hoc_sau) {
                 $error = new MessageBag([
                     'title'   => 'Lỗi',
-                    'message' => 'Môn học 1 và Môn học 2 không được giống nhau',
+                    'message' => 'Môn học trước và môn học sau không được giống nhau',
                 ]);
                 return back()->with(compact('error'));
             }
