@@ -24,4 +24,10 @@ Route::group([
     //học kỳ
     $router->resource('hocky',HocKyController::class);
 
+    //môn học
+    $router->resource('monhoc',MonHocController::class);
+
+    //tỉ lệ điểm
+    $router->resource('tilediem',TiLeDiemController::class);
+
 });
