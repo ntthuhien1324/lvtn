@@ -38,7 +38,7 @@ return [
     'captcha'               => 'Captcha',
     'action'                => 'Hành động',
     'title'                 => 'Title',
-    'description'           => 'Description',
+    'description'           => '',
     'back'                  => 'Back',
     'back_to_list'          => 'Back to List',
     'submit'                => 'Gửi',

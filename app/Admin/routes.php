@@ -28,6 +28,8 @@ Route::group([
     $router->resource('monhoc',MonHocController::class);
     //nhóm môn học
     $router->resource('nhommonhoc',NhomMonHocController::class);
+    //môn học song song
+    $router->resource('monhocsongsong',MonHocSongSongController::class);
 
     //tỉ lệ điểm
     $router->resource('tilediem',TiLeDiemController::class);
