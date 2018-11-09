@@ -84,8 +84,17 @@ class LopController extends Controller
         $grid = new Grid(new Lop);
 
         $grid->id('ID');
-        $grid->created_at('Created at');
-        $grid->updated_at('Updated at');
+        $grid->ten('Tên lớp');
+        $grid->id_khoa('Tên khoa')->display(function ($idKhoa) {
+            return Khoa::find($idKhoa)->ten;
+        });
+        $grid->id_gv('Giảng viên chủ nhiệm')->display(function ($idGv) {
+            $gv = Administrator::find($idGv);
+            $tenGv = $gv ? $gv->name : '';
+            return $tenGv;
+        });
+        $grid->created_at('Thời gian tạo');
+        $grid->updated_at('Thời gian cập nhật');
 
         return $grid;
     }
@@ -101,8 +110,17 @@ class LopController extends Controller
         $show = new Show(Lop::findOrFail($id));
 
         $show->id('ID');
-        $show->created_at('Created at');
-        $show->updated_at('Updated at');
+        $show->ten('Tên lớp');
+        $show->id_khoa('Tên khoa')->as(function ($idKhoa) {
+            return Khoa::find($idKhoa)->ten;
+        });
+        $show->id_gv('Giảng viên chủ nhiệm')->as(function ($idGv) {
+            $gv = Administrator::find($idGv);
+            $tenGv = $gv ? $gv->name : '';
+            return $tenGv;
+        });
+        $show->created_at('Thời gian tạo');
+        $show->updated_at('Thời gian cập nhật');
 
         return $show;
     }
@@ -121,7 +139,7 @@ class LopController extends Controller
             return 'required|unique:lop,ten,'.$form->model()->id.',id';
         });
         $form->select('id_khoa', 'Tên khoa')->options(Khoa::all()->pluck('ten', 'id'))->rules('required');
-        $form->select('id_gv', 'Giảng viên chủ nhiệm')->options(Administrator::where('id_loai', 0)->pluck('name', 'id'));
+        $form->select('id_gv', 'Giảng viên chủ nhiệm')->options(Administrator::where('kieu_nguoi_dung', 0)->pluck('name', 'id'));
         $form->hidden('Created at');
         $form->hidden('Updated at');
 

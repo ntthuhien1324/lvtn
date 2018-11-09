@@ -40,4 +40,7 @@ Route::group([
     $router->resource('user_gv',UserController::class);
     $router->resource('user_admin',UserController::class);
 
+    //lớp
+    $router->resource('lop',LopController::class);
+
 });
