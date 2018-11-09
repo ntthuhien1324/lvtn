@@ -12,37 +12,34 @@ Route::group([
 
     $router->get('/', 'HomeController@index');
 
-    //thông báo
-    $router->resource('thongbao',ThongBaoController::class);
+    //region Quản lý môn học
+    $router->resource('mon-hoc',MonHocController::class);
+    $router->resource('nhom-mon-hoc',NhomMonHocController::class);
+    $router->resource('ti-le-diem',TiLeDiemController::class);
+    $router->resource('mon-hoc-song-song',MonHocSongSongController::class);
+    $router->resource('mon-hoc-truoc-sau',MonHocTruocSauController::class);
+    //endregion
 
-    //tiết học
-    $router->resource('tiethoc',TietHocController::class);
+    //regionQL Đăng ký học phần
+    $router->resource('tiet-hoc',TietHocController::class);
+    //endregion
 
-    //năm học
-    $router->resource('namhoc',NamHocController::class);
+    //region Quản lý Năm, học kỳ
+    $router->resource('nam-hoc',NamHocController::class);
+    $router->resource('hoc-ky',HocKyController::class);
+    //endregion
 
-    //học kỳ
-    $router->resource('hocky',HocKyController::class);
-
-    //môn học
-    $router->resource('monhoc',MonHocController::class);
-    //nhóm môn học
-    $router->resource('nhommonhoc',NhomMonHocController::class);
-    //môn học song song
-    $router->resource('monhocsongsong',MonHocSongSongController::class);
-    //môn học trước sau
-    $router->resource('monhoctruocsau',MonHocTruocSauController::class);
-
-    //tỉ lệ điểm
-    $router->resource('tilediem',TiLeDiemController::class);
-
-    //user
+    //regionAdmin
     $router->resource('user_gv',UserController::class);
     $router->resource('user_admin',UserController::class);
+    //endregion
 
-    //lớp
+    //regionQuản lý Khoa, lớp
     $router->resource('lop',LopController::class);
-    //khoa
     $router->resource('khoa',KhoaController::class);
+    //endregion
+
+    //thông báo
+    $router->resource('thong-bao',ThongBaoController::class);
 
 });
