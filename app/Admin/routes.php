@@ -36,4 +36,8 @@ Route::group([
     //tỉ lệ điểm
     $router->resource('tilediem',TiLeDiemController::class);
 
+    //user
+    $router->resource('user_gv',UserController::class);
+    $router->resource('user_admin',UserController::class);
+
 });

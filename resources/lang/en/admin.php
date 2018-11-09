@@ -59,7 +59,7 @@ return [
     'more'                  => 'More',
     'deny'                  => 'Permission denied',
     'administrator'         => 'Người quản trị',
-    'roles'                 => 'Roles',
+    'roles'                 => 'Vai trò',
     'permissions'           => 'Permissions',
     'slug'                  => 'Slug',
     'created_at'            => 'Created At',
