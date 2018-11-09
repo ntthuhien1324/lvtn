@@ -42,5 +42,7 @@ Route::group([
 
     //lớp
     $router->resource('lop',LopController::class);
+    //khoa
+    $router->resource('khoa',KhoaController::class);
 
 });

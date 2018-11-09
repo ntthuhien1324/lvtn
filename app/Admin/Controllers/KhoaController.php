@@ -23,8 +23,8 @@ class KhoaController extends Controller
     public function index(Content $content)
     {
         return $content
-            ->header('Index')
-            ->description('description')
+            ->header('Khoa')
+            ->description('Danh sách')
             ->body($this->grid());
     }
 
@@ -38,8 +38,8 @@ class KhoaController extends Controller
     public function show($id, Content $content)
     {
         return $content
-            ->header('Detail')
-            ->description('description')
+            ->header('Chi tiết')
+            ->description(Khoa::find($id)->ten)
             ->body($this->detail($id));
     }
 
@@ -53,8 +53,8 @@ class KhoaController extends Controller
     public function edit($id, Content $content)
     {
         return $content
-            ->header('Edit')
-            ->description('description')
+            ->header('Sửa')
+            ->description(Khoa::find($id)->ten)
             ->body($this->form()->edit($id));
     }
 
@@ -67,8 +67,8 @@ class KhoaController extends Controller
     public function create(Content $content)
     {
         return $content
-            ->header('Create')
-            ->description('description')
+            ->header('Thêm khoa')
+            ->description('')
             ->body($this->form());
     }
 
@@ -82,8 +82,11 @@ class KhoaController extends Controller
         $grid = new Grid(new Khoa);
 
         $grid->id('ID');
-        $grid->created_at('Created at');
-        $grid->updated_at('Updated at');
+        $grid->ten('Tên khoa')->display(function ($ten) {
+            return '<a href="/admin/khoa/'. $this->id .'">'. $ten .'</a>';
+        });
+        $grid->created_at('Thời gian tạo');
+        $grid->updated_at('Thời gian cập nhật');
 
         return $grid;
     }
@@ -99,6 +102,7 @@ class KhoaController extends Controller
         $show = new Show(Khoa::findOrFail($id));
 
         $show->id('ID');
+        $show->ten('Tên khoa');
         $show->created_at('Created at');
         $show->updated_at('Updated at');
 
@@ -114,9 +118,12 @@ class KhoaController extends Controller
     {
         $form = new Form(new Khoa);
 
-        $form->display('ID');
-        $form->display('Created at');
-        $form->display('Updated at');
+        $form->hidden('id','ID');
+        $form->text('ten', 'Tên khoa')->rules(function ($form){
+            return 'required|unique:khoa,ten,'.$form->model()->id.',id';
+        });
+        $form->hidden('Created at');
+        $form->hidden('Updated at');
 
         return $form;
     }
