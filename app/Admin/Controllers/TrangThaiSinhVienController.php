@@ -5,8 +5,8 @@ namespace App\Admin\Controllers;
 use App\Models\TrangThaiSinhVien;
 use App\Http\Controllers\Controller;
 use Encore\Admin\Controllers\HasResourceActions;
-use Encore\Admin\Form;
-use Encore\Admin\Grid;
+use App\Admin\Extensions\Form;
+use App\Admin\Extensions\Grid;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
 
@@ -23,8 +23,8 @@ class TrangThaiSinhVienController extends Controller
     public function index(Content $content)
     {
         return $content
-            ->header('Index')
-            ->description('description')
+            ->header('Trạng thái sinh viên')
+            ->description('Danh sách')
             ->body($this->grid());
     }
 
@@ -38,8 +38,8 @@ class TrangThaiSinhVienController extends Controller
     public function show($id, Content $content)
     {
         return $content
-            ->header('Detail')
-            ->description('description')
+            ->header('Chi tiết')
+            ->description('')
             ->body($this->detail($id));
     }
 
@@ -53,8 +53,8 @@ class TrangThaiSinhVienController extends Controller
     public function edit($id, Content $content)
     {
         return $content
-            ->header('Edit')
-            ->description('description')
+            ->header('Sửa')
+            ->description('')
             ->body($this->form()->edit($id));
     }
 
@@ -67,8 +67,8 @@ class TrangThaiSinhVienController extends Controller
     public function create(Content $content)
     {
         return $content
-            ->header('Create')
-            ->description('description')
+            ->header('Thêm trạng thái')
+            ->description('')
             ->body($this->form());
     }
 
@@ -82,8 +82,9 @@ class TrangThaiSinhVienController extends Controller
         $grid = new Grid(new TrangThaiSinhVien);
 
         $grid->id('ID');
-        $grid->created_at('Created at');
-        $grid->updated_at('Updated at');
+        $grid->trang_thai('Trạng thái');
+        $grid->created_at('Thời gian tạo');
+        $grid->updated_at('Thời gian cập nhật');
 
         return $grid;
     }
@@ -99,8 +100,8 @@ class TrangThaiSinhVienController extends Controller
         $show = new Show(TrangThaiSinhVien::findOrFail($id));
 
         $show->id('ID');
-        $show->created_at('Created at');
-        $show->updated_at('Updated at');
+        $show->created_at('Thời gian tạo');
+        $show->updated_at('Thời gian cập nhật');
 
         return $show;
     }
@@ -114,9 +115,12 @@ class TrangThaiSinhVienController extends Controller
     {
         $form = new Form(new TrangThaiSinhVien);
 
-        $form->display('ID');
-        $form->display('Created at');
-        $form->display('Updated at');
+//        $form->hidden('id','ID');
+        $form->text('id', 'ID')->help('Chú ý: Nếu ID lớn hơn 5 thì sinh viên không được phép đăng ký')
+            ->rules('required|unique:trang_thai_sinh_vien');
+        $form->text('trang_thai', 'Tên trạng thái')->rules('required');
+        $form->hidden('Created at');
+        $form->hidden('Updated at');
 
         return $form;
     }

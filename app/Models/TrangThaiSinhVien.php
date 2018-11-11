@@ -10,4 +10,8 @@ class TrangThaiSinhVien extends Model
     use SoftDeletes;
 
     protected $table = 'trang_thai_sinh_vien';
+
+    protected $primaryKey = 'id'; // or null
+
+    public $incrementing = false;
 }

@@ -39,6 +39,10 @@ Route::group([
     $router->resource('khoa',KhoaController::class);
     //endregion
 
+    //regionQuản lý SV
+    $router->resource('trang-thai-sinh-vien',TrangThaiSinhVienController::class);
+    //endregion
+
     //thông báo
     $router->resource('thong-bao',ThongBaoController::class);
 
