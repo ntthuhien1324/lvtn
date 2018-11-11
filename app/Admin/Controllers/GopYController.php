@@ -126,8 +126,8 @@ class GopYController extends Controller
         $show->id('ID');
         $show->tieu_de('Tiêu đề');
         $show->noi_dung('Nội dung');
-        $show->created_at('Created at');
-        $show->updated_at('Updated at');
+        $show->created_at('Thời gian tạo');
+        $show->updated_at('Thời gian cập nhật');
 
         return $show;
     }
