@@ -42,4 +42,7 @@ Route::group([
     //thông báo
     $router->resource('thong-bao',ThongBaoController::class);
 
+    //góp ý
+    $router->resource('gop-y',GopYController::class);
+
 });
