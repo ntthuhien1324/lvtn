@@ -14,6 +14,11 @@ Route::group([
 
     //regionQuản lý đợt đăng ký
     $router->resource('dot-dang-ky',DotDangKyController::class);
+
+        //ajax
+        $router->get('lop-hoc-phan/mon-hoc','LopHocPhanController@monHoc');
+    $router->resource('lop-hoc-phan',LopHocPhanController::class);
+    $router->resource('phong-hoc',PhongHocController::class);
     //endregion
 
     //region Quản lý môn học

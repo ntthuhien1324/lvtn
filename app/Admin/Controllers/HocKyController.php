@@ -86,7 +86,14 @@ class HocKyController extends Controller
         $grid = new Grid(new HocKy);
 
         $grid->id('ID');
-        $grid->ten('Tên học kỳ');
+        $grid->ten('Tên học kỳ')->display(function ($tenHocKy) {
+            switch ($tenHocKy) {
+                case 0: return 'Học kỳ hè'; break;
+                case 1: return 'Học kỳ 1'; break;
+                case 2: return 'Học kỳ 2'; break;
+                default: '';
+            }
+        });
         $grid->id_nam_hoc('Tên năm học')->display(function () {
             return $this->namHoc->ten;
         });
@@ -125,7 +132,8 @@ class HocKyController extends Controller
         $form = new Form(new HocKy);
 
         $form->hidden('id','ID');
-        $form->text('ten','Tên học kỳ')->rules('required');
+        $options = [0 => 'Học kỳ hè', 1 => 'Học kỳ 1', 2 => 'Học kỳ 2'];
+        $form->select('ten','Tên học kỳ')->options($options)->rules('required');
         $form->select('id_nam_hoc','Tên năm học')->options(NamHoc::all()->pluck('ten','id'))
             ->rules('required');
         $form->listbox('monHoc', 'Môn học')->options(MonHoc::all()->pluck('ten', 'id'));
