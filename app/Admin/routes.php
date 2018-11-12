@@ -41,6 +41,7 @@ Route::group([
 
     //regionQuản lý SV
     $router->resource('trang-thai-sinh-vien',TrangThaiSinhVienController::class);
+    $router->resource('sinh-vien',SinhVienController::class);
     //endregion
 
     //thông báo
