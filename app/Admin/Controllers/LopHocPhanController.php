@@ -8,6 +8,8 @@ use App\Models\HocKy;
 use App\Models\LopHocPhan;
 use App\Http\Controllers\Controller;
 use App\Models\MonHoc;
+use App\Models\PhongHoc;
+use App\Models\ThoiGianHoc;
 use App\Models\TietHoc;
 use Encore\Admin\Controllers\HasResourceActions;
 use App\Admin\Extensions\Form;
@@ -18,6 +20,7 @@ use Encore\Admin\Show;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\MessageBag;
 
 class LopHocPhanController extends Controller
 {
@@ -155,8 +158,8 @@ class LopHocPhanController extends Controller
         }
         $form->select('id_dot_dang_ky', 'Đợt đăng ký')->options(DotDangKy::orderByDesc('created_at')
             ->pluck('ten', 'id'))->rules('required')->load('id_mon_hoc','/admin/lop-hoc-phan/mon-hoc');
-        $form->select('id_subjects', 'Môn học')->options(MonHoc::all()->pluck('ten', 'id'))->rules('required');
-        $form->select('id_user_teacher', 'Giảng viên')->options(Administrator::where('kieu_nguoi_dung', 0)
+        $form->select('id_mon_hoc', 'Môn học')->options(MonHoc::all()->pluck('ten', 'id'))->rules('required');
+        $form->select('id_gv', 'Giảng viên')->options(Administrator::where('kieu_nguoi_dung', 0)
             ->pluck('name', 'id'))->rules('required');
         $form->hidden('sl_hien_tai', 'Số lượng hiện tại')->value('0');
         $form->number('sl_min', 'Số lượng tối thiểu')->rules('integer|min:5');
@@ -165,23 +168,91 @@ class LopHocPhanController extends Controller
         $form->date('ngay_ket_thuc', 'Ngày kết thúc')->rules('required');
         $form->hidden('Created at');
         $form->hidden('Updated at');
-
-        $form->hasMany('thoiGianHoc', 'Thời gian học', function (NestedForm $form) {
+        $form->hasManyCustom('thoiGianHoc', 'Thời gian học', function (NestedForm $form) {
             $options = ['2'=>'Thứ 2', '3'=>'Thứ 3', '4'=>'Thứ 4', '5'=>'Thứ 5', '6'=>'Thứ 6', '7'=>'Thứ 7', '8'=>'Chủ nhật'];
             $form->select('ngay', 'Ngày học')->options($options);
             $form->select('id_phong_hoc', 'Phòng học')->options(PhongHoc::all()->pluck('ten', 'id'));
             $timeStart = TietHoc::all()->pluck('gio_bat_dau', 'gio_bat_dau' );
             $timeEnd = TietHoc::all()->pluck('gio_ket_thuc', 'gio_ket_thuc' );
+            $form->select('gio_bat_dau', 'Giờ học bắt đầu')->options($timeStart);
+            $form->select('gio_ket_thuc', 'Giờ học kết thúc')->options($timeEnd);
+        })->rules('required')->useTab();
+        $form->saving(function (Form $form) use ($currentPath) {
 
+            //Kiểm tra có trùng lịch giáo viên không
+            $idGv = $form->id_gv;
+            $idDotDangKy = $form->id_dot_dang_ky;
+            $lopHocPhanGv = LopHocPhan::where('id_gv', $idGv)->where('id_dot_dang_ky', $idDotDangKy)->pluck('id')->toArray();
+            if($currentPath == "admin/lop-hoc-phan/{lop_hoc_phan}") {
+                if (($key = array_search($form->model()->id, $lopHocPhanGv )) !== false) {
+                    unset($lopHocPhanGv[$key]);
+                }
+                $thoiGianDays = ThoiGianHoc::whereIn('id_hoc_phan_dang_ky', $lopHocPhanGv)->get()->toArray();
+            } else {
+                $thoiGianDays = ThoiGianHoc::whereIn('id_hoc_phan_dang_ky',$lopHocPhanGv)->get()->toArray();
+            }
+            if($form->thoiGianHoc) {
+                foreach ($form->thoiGianHoc as $day) {
+                    foreach ($thoiGianDays as $thoiGianDay) {
+                        if ($day['day'] == $thoiGianDay['day']) {
+                            if (
+                                ($day['gio_ket_thuc'] > $thoiGianDay['gio_bat_dau'] && $day['gio_ket_thuc'] <= $thoiGianDay['gio_ket_thuc']) ||
+                                ($day['gio_bat_dau'] >= $thoiGianDay['gio_bat_dau'] && $day['gio_bat_dau'] < $thoiGianDay['gio_ket_thuc']) ||
+                                ($day['gio_bat_dau'] >= $thoiGianDay['gio_bat_dau'] && $day['gio_ket_thuc'] <= $thoiGianDay['gio_ket_thuc'])  ||
+                                ($day['gio_bat_dau'] <= $thoiGianDay['gio_bat_dau'] && $day['gio_ket_thuc'] >= $thoiGianDay['gio_ket_thuc'])
+                            ) {
+                                $error = new MessageBag([
+                                    'title' => 'Lỗi',
+                                    'message' => 'Giảng viên đã có giờ dạy này ',
+                                ]);
+                                return back()->with(compact('error'));
+                            }
+                        }
+                    }
+                }
+            }
 
+            //Kiểm tra giờ học
+            if($form->thoiGianHoc) {
+                foreach($form->thoiGianHoc as $tgHoc) {
+                    if($tgHoc['gio_bat_dau'] >= $tgHoc['gio_ket_thuc']) {
+                        $error = new MessageBag([
+                            'title'   => 'Lỗi',
+                            'message' => 'Giờ học bắt đầu không được lớn hơn hoặc bằng giờ học kết thúc',
+                        ]);
+                        return back()->with(compact('error'));
+                    }
+                }
+            }
 
-            //
-            $form->select('time_study_start', 'Giờ học bắt đầu')->options($timeStart)->readOnly();
-            $form->select('time_study_end', 'Giờ học kết thúc')->options($timeEnd)->readOnly();
-        })->rules('required');
-        $form->disableReset();
-        $form->tools(function (Form\Tools $tools) use ($id) {
-            $tools->add('<a href="/admin/subject_register/'.$id.'/edit" class="btn btn-sm btn-default" style="margin-right: 10px;"><i class="fa fa-edit"></i>&nbsp;&nbsp;Sửa</a>');
+            //Kiểm tra phòng học
+            $lopHocPhan = LopHocPhan::where('id_dot_dang_ky', $form->id_dot_dang_ky)->pluck('id')->toArray();
+            if($currentPath == "admin/lop-hoc-phan/{lop_hoc_phan}") {
+                $thoiGianHocs = ThoiGianHoc::where('id_hoc_phan_dang_ky', '!=',$form->model()->id)
+                    ->whereIn('id_dot_dang_ky', $lopHocPhan)->get()->toArray();
+            } else {
+                $thoiGianHocs = ThoiGianHoc::all()->whereIn('id_hoc_phan_dang_ky', $lopHocPhan)->toArray();
+            }
+            if($form->thoiGianHoc) {
+                foreach ($form->thoiGianHoc as $day) {
+                    foreach ($thoiGianHocs as $thoiGianHoc) {
+                        if ($day['day'] == $thoiGianHoc['day'] && $day['id_classroom'] == $thoiGianHoc['id_classroom']) {
+                            if (
+                                ($day['gio_ket_thuc'] > $thoiGianHoc['gio_bat_dau'] && $day['gio_ket_thuc'] <= $thoiGianHoc['gio_ket_thuc']) ||
+                                ($day['gio_bat_dau'] >= $thoiGianHoc['gio_bat_dau'] && $day['gio_bat_dau'] < $thoiGianHoc['gio_ket_thuc']) ||
+                                ($day['gio_bat_dau'] >= $thoiGianHoc['gio_bat_dau'] && $day['gio_ket_thuc'] <= $thoiGianHoc['gio_ket_thuc'])  ||
+                                ($day['gio_bat_dau'] <= $thoiGianHoc['gio_bat_dau'] && $day['gio_ket_thuc'] >= $thoiGianHoc['gio_ket_thuc'])
+                            ) {
+                                $error = new MessageBag([
+                                    'title' => 'Lỗi',
+                                    'message' => 'Giờ học này đã có lớp học ',
+                                ]);
+                                return back()->with(compact('error'));
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         return $form;
