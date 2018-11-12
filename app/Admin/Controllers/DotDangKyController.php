@@ -4,17 +4,14 @@ namespace App\Admin\Controllers;
 
 use App\Models\DotDangKy;
 use App\Http\Controllers\Controller;
-use App\Models\SinhVien;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Form;
 use App\Admin\Extensions\Grid;
-use Encore\Admin\Helpers\Helpers;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\MessageBag;
-use Symfony\Component\Console\Helper\Helper;
 
 class DotDangKyController extends Controller
 {
@@ -134,8 +131,32 @@ class DotDangKyController extends Controller
         $show = new Show(DotDangKy::findOrFail($id));
 
         $show->id('ID');
-        $show->created_at('Created at');
-        $show->updated_at('Updated at');
+        $show->ten('Tên đợt đăng ký');
+        $show->tg_bat_dau('Thời gian bắt đầu đăng ký');
+        $show->tg_ket_thuc('Thời gian kết thúc đăng ký');
+        $show->hoc_ky('Học kỳ')->as(function ($hocKy) {
+            switch ($hocKy) {
+                case 0: return "Học kỳ hè";
+                    break;
+                case 1: return "Học kỳ 1";
+                    break;
+                case 2: return "Học kỳ 2";
+                    break;
+                default:
+                    return '';
+            }
+        });
+        $show->tc_max('Số tín chỉ tối đa');
+        $show->tc_min('Số tín chỉ tối thiểu');
+        $show->trang_thai('Trạng thái')->as(function ($trangThai) {
+            if($trangThai == 1){
+                return "Đang mở";
+            } else {
+                return "Đang đóng";
+            }
+        });
+        $show->created_at('Thời gian tạo');
+        $show->updated_at('Thời gian cập nhật');
 
         return $show;
     }
@@ -150,7 +171,7 @@ class DotDangKyController extends Controller
         $form = new Form(new DotDangKy);
 
         $form->display('id', 'ID');
-        $form->text('ten', 'Tên')->rules('required')
+        $form->text('ten', 'Tên đợt đăng ký')->rules('required')
             ->help('Vui lòng đặt tên là HK - Năm học (VD:HK2 - Năm 2018-2019 ) ');
         $form->datetimeRange('tg_bat_dau', 'tg_ket_thuc', 'Thời gian đăng ký')
             ->rules('required');
