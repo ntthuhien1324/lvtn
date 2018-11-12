@@ -10,4 +10,28 @@ class DotDangKy extends Model
     use SoftDeletes;
 
     protected $table = 'dot_dang_ky';
+
+    public function setTrangThaiImportDiemAttribute($trangThaiImportDiem)
+    {
+        if(is_array($trangThaiImportDiem)) {
+            $this->attributes['trang_thai_import_diem'] = json_encode($trangThaiImportDiem);
+        }
+    }
+
+    public function getTrangThaiImportDiemAttribute($trangThaiImportDiem)
+    {
+        return json_decode($trangThaiImportDiem, true);
+    }
+
+    public function setTrangThaiSuaDiemAttribute($trangThaiSuaDiem)
+    {
+        if(is_array($trangThaiSuaDiem)) {
+            $this->attributes['trang_thai_sua_diem'] = json_encode($trangThaiSuaDiem);
+        }
+    }
+
+    public function getTrangThaiSuaDiemAttribute($trangThaiSuaDiem)
+    {
+        return json_decode($trangThaiSuaDiem, true);
+    }
 }

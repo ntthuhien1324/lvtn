@@ -12,6 +12,10 @@ Route::group([
 
     $router->get('/', 'HomeController@index');
 
+    //regionQuản lý đợt đăng ký
+    $router->resource('dot-dang-ky',DotDangKyController::class);
+    //endregion
+
     //region Quản lý môn học
     $router->resource('mon-hoc',MonHocController::class);
     $router->resource('nhom-mon-hoc',NhomMonHocController::class);
