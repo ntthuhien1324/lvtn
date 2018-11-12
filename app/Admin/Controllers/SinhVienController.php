@@ -146,7 +146,7 @@ class SinhVienController extends Controller
         $form->text('mssv','Mã số sinh viên')->rules(function ($form) {
             return 'required|min:10|unique:sinh_vien,mssv,'.$form->model()->id.',id';
         });
-        $form->email('Email');
+        $form->email('email','Email');
         $form->hidden('password');
         $form->saving(function (Form $form) {
             $form->password = $form->ngay_sinh;
