@@ -23,8 +23,8 @@ class PhongHocController extends Controller
     public function index(Content $content)
     {
         return $content
-            ->header('Index')
-            ->description('description')
+            ->header('Phòng học')
+            ->description('Danh sách')
             ->body($this->grid());
     }
 
@@ -38,8 +38,8 @@ class PhongHocController extends Controller
     public function show($id, Content $content)
     {
         return $content
-            ->header('Detail')
-            ->description('description')
+            ->header('Chi tiết')
+            ->description('')
             ->body($this->detail($id));
     }
 
@@ -53,8 +53,8 @@ class PhongHocController extends Controller
     public function edit($id, Content $content)
     {
         return $content
-            ->header('Edit')
-            ->description('description')
+            ->header('Sửa')
+            ->description('')
             ->body($this->form()->edit($id));
     }
 
@@ -67,8 +67,8 @@ class PhongHocController extends Controller
     public function create(Content $content)
     {
         return $content
-            ->header('Create')
-            ->description('description')
+            ->header('Thêm phòng')
+            ->description('')
             ->body($this->form());
     }
 
@@ -80,10 +80,19 @@ class PhongHocController extends Controller
     protected function grid()
     {
         $grid = new Grid(new PhongHoc);
+        $grid->model()->orderByDesc('created_at');
 
         $grid->id('ID');
-        $grid->created_at('Created at');
-        $grid->updated_at('Updated at');
+        $grid->ten('Tên phòng')->display(function ($ten){
+            return  '<a href="/admin/phong-hoc/' . $this->id . '">'.$ten.'</a>';
+        })->sortable();
+        $grid->created_at('Thời gian tạo');
+        $grid->updated_at('Thời gian cập nhật');
+        $grid->filter(function ($filter){
+            $filter->disableIdFilter();
+            $filter->in('ten', 'Tên phòng')->multipleSelect(PhongHoc::all()->pluck('ten','ten'));
+            $filter->between('created_at', 'Tạo vào lúc')->datetime();
+        });
 
         return $grid;
     }
@@ -99,8 +108,9 @@ class PhongHocController extends Controller
         $show = new Show(PhongHoc::findOrFail($id));
 
         $show->id('ID');
-        $show->created_at('Created at');
-        $show->updated_at('Updated at');
+        $show->ten('Tên phòng');
+        $show->created_at('Thời gian tạo');
+        $show->updated_at('Thời gian cập nhật');
 
         return $show;
     }
@@ -114,9 +124,12 @@ class PhongHocController extends Controller
     {
         $form = new Form(new PhongHoc);
 
-        $form->display('ID');
-        $form->display('Created at');
-        $form->display('Updated at');
+        $form->hidden('ID');
+        $form->text('ten', 'Tên phòng')->rules(function ($form){
+            return 'required|unique:phong_hoc,ten,'.$form->model()->id.',id';
+        });
+        $form->hidden('Created at');
+        $form->hidden('Updated at');
 
         return $form;
     }

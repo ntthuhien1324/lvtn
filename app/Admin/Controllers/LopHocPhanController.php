@@ -95,7 +95,7 @@ class LopHocPhanController extends Controller
         $grid->model()->orderByDesc('created_at');
 
         $grid->id('Mã học phần')->display(function ($id) {
-            return '<a href="/admin/lop-hoc-phan/'.$id.'">'. LopHocPhan::find($id)->ten .'</a>';
+            return '<a href="/admin/lop-hoc-phan/'.$id.'">'. $id .'</a>';
         });
         $grid->id_mon_hoc('Môn học')->display(function ($idMonHoc) {
             return "<span class='label label-success'>" . MonHoc::find($idMonHoc)->ten . "</span>";
@@ -131,8 +131,42 @@ class LopHocPhanController extends Controller
         $show = new Show(LopHocPhan::findOrFail($id));
 
         $show->id('ID');
-        $show->created_at('Created at');
-        $show->updated_at('Updated at');
+        $show->id_dot_dang_ky('Đợt đăng ký')->as(function ($idDotDangKy) {
+            return DotDangKy::find($idDotDangKy)->ten;
+        });
+        $show->id_mon_hoc('Môn học')->as(function ($idMonHoc) {
+            return MonHoc::find($idMonHoc)->ten;
+        });
+        $show->id_gv('Giảng viên')->as(function ($idGv) {
+            return Administrator::find($idGv)->name;
+        });
+        $show->sl_hien_tai('Số lượng hiện tại');
+        $show->sl_min('Số lượng tối thiểu');
+        $show->sl_max('Số lượng tối đa');
+        $show->ngay_bat_dau('Ngày bắt đầu');
+        $show->ngay_ket_thuc('Ngày kết thúc');
+        $show->created_at('Thời gian tạo');
+        $show->updated_at('Thời gian cập nhật');
+        $show->divider();
+        $show->thoi_gian_hoc('Thời gian học', function ($thoiGianHoc) {
+            $thoiGianHoc->ngay('Ngày')->display(function ($ngay) {
+                switch ($ngay) {
+                    case '2': return 'Thứ 2'; break;
+                    case '3': return 'Thứ 3'; break;
+                    case '4': return 'Thứ 4'; break;
+                    case '5': return 'Thứ 5'; break;
+                    case '6': return 'Thứ 6'; break;
+                    case '7': return 'Thứ 7'; break;
+                    case '8': return 'Chủ nhật'; break;
+                    default: return '';
+                }
+            });
+            $thoiGianHoc->id_phong_hoc('Phòng học')->display(function ($idPhong) {
+                return PhongHoc::find($idPhong)->ten;
+            });
+            $thoiGianHoc->gio_bat_dau('Giờ học bắt đầu');
+            $thoiGianHoc->gio_ket_thuc('Giờ học kết thúc');
+        });
 
         return $show;
     }
@@ -168,7 +202,7 @@ class LopHocPhanController extends Controller
         $form->date('ngay_ket_thuc', 'Ngày kết thúc')->rules('required');
         $form->hidden('Created at');
         $form->hidden('Updated at');
-        $form->hasManyCustom('thoiGianHoc', 'Thời gian học', function (NestedForm $form) {
+        $form->hasManyCustom('thoi_gian_hoc', 'Thời gian học', function (NestedForm $form) {
             $options = ['2'=>'Thứ 2', '3'=>'Thứ 3', '4'=>'Thứ 4', '5'=>'Thứ 5', '6'=>'Thứ 6', '7'=>'Thứ 7', '8'=>'Chủ nhật'];
             $form->select('ngay', 'Ngày học')->options($options);
             $form->select('id_phong_hoc', 'Phòng học')->options(PhongHoc::all()->pluck('ten', 'id'));
@@ -191,10 +225,10 @@ class LopHocPhanController extends Controller
             } else {
                 $thoiGianDays = ThoiGianHoc::whereIn('id_hoc_phan_dang_ky',$lopHocPhanGv)->get()->toArray();
             }
-            if($form->thoiGianHoc) {
-                foreach ($form->thoiGianHoc as $day) {
+            if($form->thoi_gian_hoc) {
+                foreach ($form->thoi_gian_hoc as $day) {
                     foreach ($thoiGianDays as $thoiGianDay) {
-                        if ($day['day'] == $thoiGianDay['day']) {
+                        if ($day['ngay'] == $thoiGianDay['ngay']) {
                             if (
                                 ($day['gio_ket_thuc'] > $thoiGianDay['gio_bat_dau'] && $day['gio_ket_thuc'] <= $thoiGianDay['gio_ket_thuc']) ||
                                 ($day['gio_bat_dau'] >= $thoiGianDay['gio_bat_dau'] && $day['gio_bat_dau'] < $thoiGianDay['gio_ket_thuc']) ||
@@ -213,8 +247,8 @@ class LopHocPhanController extends Controller
             }
 
             //Kiểm tra giờ học
-            if($form->thoiGianHoc) {
-                foreach($form->thoiGianHoc as $tgHoc) {
+            if($form->thoi_gian_hoc) {
+                foreach($form->thoi_gian_hoc as $tgHoc) {
                     if($tgHoc['gio_bat_dau'] >= $tgHoc['gio_ket_thuc']) {
                         $error = new MessageBag([
                             'title'   => 'Lỗi',
@@ -229,14 +263,14 @@ class LopHocPhanController extends Controller
             $lopHocPhan = LopHocPhan::where('id_dot_dang_ky', $form->id_dot_dang_ky)->pluck('id')->toArray();
             if($currentPath == "admin/lop-hoc-phan/{lop_hoc_phan}") {
                 $thoiGianHocs = ThoiGianHoc::where('id_hoc_phan_dang_ky', '!=',$form->model()->id)
-                    ->whereIn('id_dot_dang_ky', $lopHocPhan)->get()->toArray();
+                    ->whereIn('id_hoc_phan_dang_ky', $lopHocPhan)->get()->toArray();
             } else {
                 $thoiGianHocs = ThoiGianHoc::all()->whereIn('id_hoc_phan_dang_ky', $lopHocPhan)->toArray();
             }
-            if($form->thoiGianHoc) {
-                foreach ($form->thoiGianHoc as $day) {
+            if($form->thoi_gian_hoc) {
+                foreach ($form->thoi_gian_hoc as $day) {
                     foreach ($thoiGianHocs as $thoiGianHoc) {
-                        if ($day['day'] == $thoiGianHoc['day'] && $day['id_classroom'] == $thoiGianHoc['id_classroom']) {
+                        if ($day['ngay'] == $thoiGianHoc['ngay'] && $day['id_phong_hoc'] == $thoiGianHoc['id_phong_hoc']) {
                             if (
                                 ($day['gio_ket_thuc'] > $thoiGianHoc['gio_bat_dau'] && $day['gio_ket_thuc'] <= $thoiGianHoc['gio_ket_thuc']) ||
                                 ($day['gio_bat_dau'] >= $thoiGianHoc['gio_bat_dau'] && $day['gio_bat_dau'] < $thoiGianHoc['gio_ket_thuc']) ||
