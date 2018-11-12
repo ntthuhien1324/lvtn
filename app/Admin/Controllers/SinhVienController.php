@@ -151,7 +151,7 @@ class SinhVienController extends Controller
         $form->saving(function (Form $form) {
             $form->password = $form->ngay_sinh;
         });
-        $form->select('id_lop')->options(Lop::all()->pluck('ten','id'))->rules('required');
+        $form->select('id_lop','Lớp')->options(Lop::all()->pluck('ten','id'))->rules('required');
         $form->year('nam_nhap_hoc','Năm nhập học')->rules('required');
         $form->select('id_trang_thai','Trạng thái')->options(TrangThaiSinhVien::all()->pluck('trang_thai','id'))->default(1);
 
