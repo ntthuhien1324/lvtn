@@ -10,4 +10,11 @@ class SinhVien extends Model
     use SoftDeletes;
 
     protected $table = 'sinh_vien';
+
+    public function setPasswordAttribute($password)
+    {
+        if($password && $password != $this->password) {
+            $this->attributes['password'] = bcrypt($password);
+        }
+    }
 }

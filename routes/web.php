@@ -11,7 +11,14 @@
 |
 */
 
+use Illuminate\Routing\Router;
+
 Route::get('/', function () {
     return view('welcome');
 });
 Route::get('getLogin', 'ThongBaoLoginController@list');
+Route::post('postLogin','UserSinhVienController@postlogin');
+Route::get('logout', 'UserSinhVienController@logout');
+Route::group(['prefix'=>'user', 'middleware'=>'sinhVienLogin'], function(Router $router){
+    $router->resource('sinh-vien', UserSinhVienController::class);
+});
