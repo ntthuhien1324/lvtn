@@ -1,6 +1,5 @@
 <div class="box">
     <div class="box-header">
-        <h3 class="box-title"></h3>
         <div class="pull-left">
             <?php $show = 0; ?>
             @foreach($grid->rows() as $row)
@@ -23,17 +22,17 @@
                 @endforeach
             @endforeach
         </div>
-        <div class="pull-right">
-            {!! $grid->renderFilter() !!}
-            {!! $grid->renderExportButton() !!}
-            {!! $grid->renderCreateButton() !!}
-
+        <div class="box-header with-border">
+            <div class="pull-right">
+                {!! $grid->renderExportButton() !!}
+                {!! $grid->renderCreateButton() !!}
+            </div>
+            <span>
+            {!! $grid->renderHeaderTools() !!}
+        </span>
         </div>
 
-        <span>
-{{--                    {!! $grid->renderHeaderTools() !!}--}}
-
-                </span>
+        {!! $grid->renderFilter() !!}
 
     </div>
     <!-- /.box-header -->

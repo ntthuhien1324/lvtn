@@ -4,6 +4,7 @@ namespace App\Admin\Controllers;
 
 use App\Models\DotDangKy;
 use App\Http\Controllers\Controller;
+use App\Models\SinhVien;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Form;
@@ -177,6 +178,10 @@ class DotDangKyController extends Controller
             ->rules('required');
         $options = [0 => 'Học kỳ hè', 1 => 'Học kỳ 1', 2 => 'Học kỳ 2'];
         $form->select('hoc_ky', 'Học kỳ')->options($options);
+        $namNhapHoc = SinhVien::distinct('nam_nhap_hoc')->orderBy('nam_nhap_hoc', 'DESC')->limit(6)->pluck('nam_nhap_hoc', 'nam_nhap_hoc')->toArray();
+        $namNhapHoc['0'] = "Tất cả";
+        ksort($namNhapHoc);
+        $form->multipleSelect('nam_nhap_hoc','Khóa đăng ký')->options($namNhapHoc);
         $states = [
             'on'  => ['value' => 1, 'text' => 'Mở', 'color' => 'success'],
             'off' => ['value' => 0, 'text' => 'Đóng', 'color' => 'danger'],
@@ -206,6 +211,9 @@ EOT;
         Admin::script($script);
         $currentPath = Route::getFacadeRoot()->current()->uri();
         $form->saving(function (Form $form) use ($currentPath) {
+            if($form->nam_nhap_hoc['0'] == "0" || $form->nam_nhap_hoc['0'] == null  ) {
+                $form->nam_nhap_hoc = 'All';
+            }
             if($form->trang_thai_import_diem['0'] == 'All' || $form->trang_thai_import_diem['0'] == '1' && $form->trang_thai_import_diem['1'] == '2'){
                 $form->trang_thai_import_diem = 'All';
             }

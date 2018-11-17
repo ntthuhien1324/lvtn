@@ -11,6 +11,18 @@ class DotDangKy extends Model
 
     protected $table = 'dot_dang_ky';
 
+    public function setNamNhapHocAttribute($namNhapHoc)
+    {
+        if(is_array($namNhapHoc)) {
+            $this->attributes['nam_nhap_hoc'] = json_encode($namNhapHoc);
+        }
+    }
+
+    public function getNamNhapHocAttribute($namNhapHoc)
+    {
+        return json_decode($namNhapHoc, true);
+    }
+
     public function setTrangThaiImportDiemAttribute($trangThaiImportDiem)
     {
         if(is_array($trangThaiImportDiem)) {

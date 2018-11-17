@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\NhomMonHoc;
 use App\Models\TiLeDiem;
 use Encore\Admin\Controllers\HasResourceActions;
-use Encore\Admin\Form;
+use App\Admin\Extensions\Form;
 use Encore\Admin\Layout\Content;
 use App\Admin\Extensions\Grid;
 use App\Admin\Extensions\Show;
@@ -85,7 +85,7 @@ class MonHocController extends Controller
     {
         $grid = new Grid(new MonHoc);
 
-        $grid->id('ID');
+        $grid->id('Mã môn học');
         $grid->ten('Tên môn học');
         $grid->so_tin_chi('Số tín chỉ');
         $grid->id_ti_le_diem('Tỉ lệ điểm')->display(function () {
@@ -128,8 +128,7 @@ class MonHocController extends Controller
     {
         $form = new Form(new MonHoc);
 
-        $form->hidden('id','ID');
-        $form->text('ma_mon_hoc','Mã môn học')->rules('required');
+        $form->text('id','Mã môn học');
         $form->text('ten','Tên môn học')->rules('required');
         $form->number('so_tin_chi','Số tín chỉ')->rules('numeric|min:1|max:8');
         $form->select('id_ti_le_diem','Tỉ lệ điểm')

@@ -10,6 +10,9 @@ class MonHoc extends Model
     use SoftDeletes;
 
     protected $table = 'mon_hoc';
+    protected $primaryKey = 'id';
+    protected $keyType  = 'string';
+    public $incrementing = false;
 
     public function tiLeDiem() {
         return $this->belongsTo(TiLeDiem::class,'id_ti_le_diem','id');
