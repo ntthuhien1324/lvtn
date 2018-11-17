@@ -12,7 +12,7 @@
     <title>Đăng nhập cho sinh viên</title>
     <base href="{{asset('')}}">
     <!-- Bootstrap Core CSS -->
-    <link href="vendor/laravel-admin/AdminLTE/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="css/helper.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
@@ -54,17 +54,19 @@
                     <thead class="thead-dark" >
                     <tr align="center">
                         <th>Tên thông báo</th>
-                        <th>Mô tả thông báo</th>
                     </tr>
                     </thead>
                     <tbody>
 
                     @foreach($thongBao as $value)
                         <tr>
-
-                            <td>{{$value->name}}</td>
-                            <td><a href="{{$value->url}}"</a> {{$value->description}}</td>
-
+                            <?php if ($value->url) {?>
+                            <td><a href="uploads/{{$value->url}}"</a> {{$value->ten}}</td>
+                            <?php } else {
+                                ?>
+                                <td><a "</a> {{$value->ten}}</td>
+<?php
+                                } ?>
                         </tr>
                     @endforeach
                     </tbody>

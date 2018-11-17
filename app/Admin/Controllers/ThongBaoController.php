@@ -85,7 +85,7 @@ class ThongBaoController extends Controller
 
         $grid->id('ID');
         $grid->ten('Tiêu đề')->display(function ($tieuDe) {
-            return '<a href="thongbao/'.$this->id.'">'.$tieuDe.'</a>';
+            return '<a href="thong-bao/'.$this->id.'">'.$tieuDe.'</a>';
         });
 //        $grid->noi_dung('Nội dung thông báo');
         $grid->created_at('Thời gian tạo');
@@ -125,6 +125,7 @@ class ThongBaoController extends Controller
         $form->hidden('id','ID');
         $form->text('ten','Tiêu đề')->rules('required');
         $form->textarea('noi_dung','Nội dung thông báo');
+        $form->file('url','Upload file')->rules('mimes:pdf,docx,xlsx');
         $form->hidden('Created at');
         $form->hidden('Updated at');
 
