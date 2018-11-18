@@ -59,4 +59,8 @@ Route::group([
     //góp ý
     $router->resource('gop-y',GopYController::class);
 
+    //regionRoute Giảng viên
+    $router->resource('giang-vien/lop',GiangVienController::class);
+    //endregion
+
 });
