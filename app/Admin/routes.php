@@ -63,6 +63,8 @@ Route::group([
     $router->resource('giang-vien/lop',GiangVienController::class);
     //thông tin lớp học phần
     $router->get('giang-vien/thong-tin-sinh-vien/{id}','ThongTinSinhVienController@show');
+    $router->get('giang-vien/lop-hoc-phan','GiangVienController@lopHocPhan');
+    $router->get('giang-vien','GiangVienController@lopHocPhan');
     //endregion
 
 });

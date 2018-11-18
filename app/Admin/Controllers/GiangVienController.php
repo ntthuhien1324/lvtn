@@ -10,11 +10,17 @@ namespace App\Admin\Controllers;
 
 use App\Admin\Extensions\Grid;
 use App\Http\Controllers\Controller;
+use App\Models\DotDangKy;
 use App\Models\Khoa;
 use App\Models\Lop;
+use App\Models\LopHocPhan;
+use App\Models\MonHoc;
+use App\Models\PhongHoc;
 use App\Models\SinhVien;
+use App\Models\ThoiGianHoc;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Facades\Admin;
+use Encore\Admin\Form;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
 
@@ -163,170 +169,142 @@ class GiangVienController extends Controller
         return $grid;
     }
 
-
-
-    /**
-     * Make a form builder.
-     *
-     * @return Form
-     */
-    protected function form()
+    public function lopHocPhan(Content $content)
     {
-        return Admin::form(ClassSTU::class, function (Form $form) {
-            $form->text('name', 'Tên lớp')->rules(function ($form) {
-                return 'required|unique:class,name,' . $form->model()->id . ',id';
-            })->readOnly();
-            $form->select('id_department', 'Tên khoa')->options(Department::all()->pluck('name', 'id'))->rules('required')->readOnly();
-            $form->disableReset();
-        });
-    }
-
-
-
-    //todo start subject-register
-    #region subject register
-    //subject register of teacher
-    public function subjectRegister()
-    {
-        return Admin::content(function (Content $content) {
-
-            $content->header('Giảng viên');
-            $content->description('Xem lịch, TKB');
-
-            $content->body(
+        return $content->header('Giảng viên')
+            ->description('Xem lịch, TKB')
+            ->body(
                 view('vendor.details',
                     [
-                        'template_body_name' => 'admin.Teacher.SubjectRegister.info',
-                        'formTimeRegister' => $this->formTimeRegister(),
-                        'gridSubjectRegister' => $this->gridSubjectRegister()
+                        'template_body_name' => 'vendor.admin.giang_vien.lop_hoc_phan.info',
+                        'formDotDangKy' => $this->formDotDangKy(),
+                        'gridLopHocPhan' => $this->gridLopHocPhan()->render()
                     ]));
-        });
     }
 
-    protected function formTimeRegister()
+    protected function formDotDangKy()
     {
-        return Admin::form(TimeRegister::class, function (Form $form) {
-            $user = Admin::user();
-            $idUser = $user->id;
-            $timeRegisterTeacher = SubjectRegister::where('id_user_teacher', $idUser)->pluck('id_time_register')->toArray();
-            $form->select('id_time_register', 'Thời gian')->options(TimeRegister::whereIn('id', $timeRegisterTeacher)->orderBy('id', 'DESC')->pluck('name', 'id'));
+        $form = new Form(new DotDangKy());
+        $user = Admin::user();
+        $idUser = $user->id;
+        $idDotDangKy = LopHocPhan::where('id_gv', $idUser)->pluck('id_dot_dang_ky')->toArray();
+        $form->select('id_dot_dang_ky', 'Đợt đăng ký')->options(DotDangKy::whereIn('id', $idDotDangKy)->orderByDesc('id')->pluck('ten', 'id'));
+        $form->footer(function ($footer) {
 
-            $form->disableReset();
-            $form->disableSubmit();
+            // disable reset btn
+            $footer->disableReset();
+
+            // disable submit btn
+            $footer->disableSubmit();
+
+            // disable `View` checkbox
+            $footer->disableViewCheck();
+
+            // disable `Continue editing` checkbox
+            $footer->disableEditingCheck();
 
         });
+
+        return $form;
+
     }
 
-    protected function gridSubjectRegister()
+    protected function gridLopHocPhan()
     {
-        return Admin::grid(SubjectRegister::class, function (Grid $grid)  {
-            $user = Admin::user();
-            $idUser = $user->id;
-            $subjectRegister = SubjectRegister::where('id_user_teacher', $idUser)->orderBy('id_time_register', 'DESC')->first();
-            if(!empty($subjectRegister)) {
-                $grid->model()->where('id_time_register', $subjectRegister->id_time_register)->where('id_user_teacher', $idUser);
+        $grid = new Grid(new LopHocPhan());
+        $user = Admin::user();
+        $idUser = $user->id;
+        $lopHocPhan = LopHocPhan::where('id_gv', $idUser)->orderByDesc('id_dot_dang_ky')->first();
+        if(!empty($lopHocPhan)) {
+            $grid->model()->where('id_dot_dang_ky', $lopHocPhan->id_dot_dang_ky)->where('id_gv', $idUser);
+        } else {
+            $grid->model()->where('id', '-1');
+        }
+        $grid->id('Mã học phần')->display(function ($name) {
+            return '<a href="/admin/giang-vien/lop-hoc-phan/' . $this->id . '">' . $name . '</a>';
+        });
+        $grid->id_mon_hoc('Môn học')->display(function ($idMonHoc) {
+            if ($idMonHoc) {
+                $name = MonHoc::find($idMonHoc)->ten;
+                return "<span class='label label-info'>{$name}</span>";
             } else {
-                $grid->model()->where('id', '-1');
+                return '';
             }
-            $grid->id('Mã học phần')->display(function ($name) {
-                return '<a href="/admin/teacher/subject-register/' . $this->id . '/details">' . $name . '</a>';
-            });
-            $grid->id_subjects('Môn học')->display(function ($idSubject) {
-                if ($idSubject) {
-                    $name = Subjects::find($idSubject)->name;
-                    return "<span class='label label-info'>{$name}</span>";
-                } else {
-                    return '';
-                }
-            });
-            $grid->column('Phòng')->display(function () {
-                $idClassroom = TimeStudy::where('id_subject_register', $this->id)->pluck('id_classroom')->toArray();
-                $classRoom = Classroom::whereIn('id', $idClassroom)->pluck('name')->toArray();
-                $classRoom = array_map(function ($classRoom) {
-                    return "<span class='label label-success'>{$classRoom}</span>";
-                }, $classRoom);
-                return join('&nbsp;', $classRoom);
-            });
-            $grid->column('Buổi học')->display(function () {
-                $day = TimeStudy::where('id_subject_register', $this->id)->pluck('day')->toArray();
-                $day = array_map(function ($day) {
-                    switch ($day) {
-                        case 2:
-                            $day = 'Thứ 2';
-                            break;
-                        case 3:
-                            $day = 'Thứ 3';
-                            break;
-                        case 4:
-                            $day = 'Thứ 4';
-                            break;
-                        case 5:
-                            $day = 'Thứ 5';
-                            break;
-                        case 6:
-                            $day = 'Thứ 6';
-                            break;
-                        case 7:
-                            $day = 'Thứ 7';
-                            break;
-                        case 8:
-                            $day = 'Chủ nhật';
-                            break;
-                    }
-                    return "<span class='label label-success'>{$day}</span>";
-                }, $day);
-                return join('&nbsp;', $day);
-            });
-            $grid->column('Thời gian học')->display(function () {
-                $timeStart = TimeStudy::where('id_subject_register', $this->id)->pluck('time_study_start')->toArray();
-                $timeEnd = TimeStudy::where('id_subject_register', $this->id)->pluck('time_study_end')->toArray();
-                $time = array_map(function ($timeStart, $timeEnd) {
-                    return "<span class='label label-success'>{$timeStart} - {$timeEnd}</span>";
-                }, $timeStart, $timeEnd);
-                return join('&nbsp;', $time);
-            });
-            $grid->id_user_teacher('Giảng viên')->display(function ($id_user_teacher) {
-                if ($id_user_teacher) {
-                    $teacher = UserAdmin::find($id_user_teacher);
-                    if ($teacher) {
-                        return $teacher->name;
-                    } else {
-                        return '';
-                    }
-                } else {
-                    return '';
-                }
-            });
-            $grid->qty_current('Số lượng hiện tại');
-
-            $grid->date_start('Ngày bắt đầu');
-            $grid->date_end('Ngày kết thúc');
-            //action
-            $grid->actions(function ($actions) {
-                $actions->disableEdit();
-                $actions->disableDelete();
-                $actions->append('<a href="/admin/teacher/subject-register/' . $actions->getKey() . '/details"><i class="fa fa-eye"></i></a>');
-            });
-            $grid->disableFilter();
-            $grid->filter(function($filter){
-                $filter->disableIdFilter();
-                $filter->like('id', 'Mã học phần');
-//                $filter->in('id_subjects', 'Tên môn học')->multipleSelect(Subjects::all()->pluck('name', 'id'));
-                $filter->where(function ($query) {
-                    $input = $this->input;
-                    $query->whereIn('id_subjects', $input);
-                }, 'Tên môn học')->multipleSelect(Subjects::all()->pluck('name', 'id'));
-                $filter->in('id_user_teacher', 'Giảng viên')->multipleSelect(UserAdmin::where('type_user', 0)->pluck('name', 'id'));
-                $filter->in('id_time_register', 'TG Đăng ký')->multipleSelect(TimeRegister::all()->pluck('name','id'));
-                $filter->like('qty_current', 'SL hiện tại');
-                $filter->date('date_start', 'Ngày bắt đầu');
-                $filter->date('date_end', 'Ngày kết thúc');
-                $filter->between('created_at', 'Tạo vào lúc')->datetime();
-            });
-            $grid->disableCreateButton();
-            $grid->disableExport();
-            $grid->disableRowSelector();
         });
+        $grid->column('Phòng')->display(function () {
+            $idPhong = ThoiGianHoc::where('id_hoc_phan_dang_ky', $this->id)->pluck('id_phong_hoc')->toArray();
+            $phongHoc = PhongHoc::whereIn('id', $idPhong)->pluck('ten')->toArray();
+            $phongHoc = array_map(function ($phongHoc) {
+                return "<span class='label label-success'>{$phongHoc}</span>";
+            }, $phongHoc);
+            return join('&nbsp;', $phongHoc);
+        });
+        $grid->column('Buổi học')->display(function () {
+            $day = ThoiGianHoc::where('id_hoc_phan_dang_ky', $this->id)->pluck('ngay')->toArray();
+            $day = array_map(function ($day) {
+                switch ($day) {
+                    case 2:
+                        $day = 'Thứ 2';
+                        break;
+                    case 3:
+                        $day = 'Thứ 3';
+                        break;
+                    case 4:
+                        $day = 'Thứ 4';
+                        break;
+                    case 5:
+                        $day = 'Thứ 5';
+                        break;
+                    case 6:
+                        $day = 'Thứ 6';
+                        break;
+                    case 7:
+                        $day = 'Thứ 7';
+                        break;
+                    case 8:
+                        $day = 'Chủ nhật';
+                        break;
+                }
+                return "<span class='label label-success'>{$day}</span>";
+            }, $day);
+            return join('&nbsp;', $day);
+        });
+        $grid->column('Thời gian học')->display(function () {
+            $timeStart = ThoiGianHoc::where('id_hoc_phan_dang_ky', $this->id_hoc_phan_dang_ky)->pluck('gio_bat_dau')->toArray();
+            $timeEnd = ThoiGianHoc::where('id_hoc_phan_dang_ky', $this->id_hoc_phan_dang_ky)->pluck('gio_ket_thuc')->toArray();
+            $time = array_map(function ($timeStart, $timeEnd) {
+                return "<span class='label label-success'>{$timeStart} - {$timeEnd}</span>";
+            }, $timeStart, $timeEnd);
+            return join('&nbsp;', $time);
+        });
+        $grid->column('Giảng viên')->display(function () {
+            $lopHocPhan = LopHocPhan::where('id',$this->id_hoc_phan_dang_ky)->first();
+            if (!empty($subjectRegister)) {
+                $gv = Administrator::find($lopHocPhan->id_gv);
+                if ($gv) {
+                    return $gv->ten;
+                } else {
+                    return '';
+                }
+            } else {
+                return '';
+            }
+        });
+        $grid->sl_hien_tai('Số lượng hiện tại');
+
+        $grid->ngay_bat_dau('Ngày bắt đầu');
+        $grid->ngay_ket_thuc('Ngày kết thúc');
+        //action
+        $grid->actions(function ($actions) {
+            $actions->disableEdit();
+            $actions->disableDelete();
+        });
+        $grid->disableFilter();
+        $grid->disableCreateButton();
+        $grid->disableExport();
+        $grid->disableRowSelector();
+
+        return $grid;
     }
 
     public function detailsSubjectRegister($id)
