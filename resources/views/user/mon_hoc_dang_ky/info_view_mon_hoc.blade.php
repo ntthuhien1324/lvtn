@@ -1,6 +1,6 @@
 <?php
 use App\Models\KetQuaDangKy;
-use App\Models\DangKyMonHoc;
+use App\Models\LopHocPhan;
 use App\Models\MonHoc;
 use App\Models\DotDangKy;
 use App\Models\ThoiGianHoc;
@@ -43,8 +43,8 @@ $arrTietHoc = collect($arrTietHoc)->map(function($x){ return (array) $x; })->toA
                     foreach ($thoiGianHoc as $gioHoc) {
                         $startTime = strtotime($gioHoc['gio_bat_dau']);
                         $endTime = strtotime($gioHoc['gio_ket_thuc']);
-                        if ($gioHoc['day'] == ($key + 2) && $start >= $startTime && $end <= $endTime) {
-                            $idMonHoc = DangKyMonHoc::where('id', $gioHoc['id_hoc_phan_dang_ky'])->first();
+                        if ($gioHoc['ngay'] == ($key + 2) && $start >= $startTime && $end <= $endTime) {
+                            $idMonHoc = LopHocPhan::where('id', $gioHoc['id_hoc_phan_dang_ky'])->first();
                             if (!empty($idMonHoc)) {
                                 $idMonHoc = $idMonHoc->id_mon_hoc;
                                 $isExisted = false;
@@ -77,8 +77,8 @@ $arrTietHoc = collect($arrTietHoc)->map(function($x){ return (array) $x; })->toA
                             $count = 1;
                             $idMonHoc = array_keys($arrayTable[$dayKey][$keyTietHoc])[0];
                             $count = array_values($arrayTable[$dayKey][$keyTietHoc])[0];
-                            $nameSubject = MonHoc::where("id", $idMonHoc)->first();
-                            echo "<td rowspan='$count' style='background-color:#ecf0f1;border-color:Gray;border-width:1px;border-style:solid;height:22px;width:110px;color:Teal;text-align:center;font-weight:bold;' >$nameSubject->name</td>";
+                            $monHoc = MonHoc::where("id", $idMonHoc)->first();
+                            echo "<td rowspan='$count' style='background-color:#ecf0f1;border-color:Gray;border-width:1px;border-style:solid;height:22px;width:110px;color:Teal;text-align:center;font-weight:bold;' >$monHoc->ten</td>";
                         } else if(is_array($arrayTable[$dayKey][$keyTietHoc])){// nếu như là array thì render
                             echo "<td rowspan='1' class='td-object'></td>";
                         }

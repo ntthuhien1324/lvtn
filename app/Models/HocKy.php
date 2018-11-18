@@ -15,7 +15,7 @@ class HocKy extends Model
         return $this->belongsTo(NamHoc::class, 'id_nam_hoc', 'id');
     }
 
-    public function monHoc() {
+    public function mon_hoc() {
         return $this->belongsToMany(MonHoc::class, 'mon_hoc_hoc_ky', 'id_hoc_ky', 'id_mon_hoc');
     }
 }

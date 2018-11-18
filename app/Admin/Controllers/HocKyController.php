@@ -136,7 +136,7 @@ class HocKyController extends Controller
         $form->select('ten','Tên học kỳ')->options($options)->rules('required');
         $form->select('id_nam_hoc','Tên năm học')->options(NamHoc::all()->pluck('ten','id'))
             ->rules('required');
-        $form->listbox('monHoc', 'Môn học')->options(MonHoc::all()->pluck('ten', 'id'));
+        $form->listbox('mon_hoc', 'Môn học')->options(MonHoc::all()->pluck('ten', 'id'));
         $form->hidden('Created at');
         $form->hidden('Updated at');
 

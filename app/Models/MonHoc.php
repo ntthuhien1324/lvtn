@@ -22,7 +22,7 @@ class MonHoc extends Model
         return $this->belongsToMany(HocKy::class, 'mon_hoc_hoc_ky', 'id_mon_hoc', 'id_hoc_ky');
     }
 
-    public function nhomMonHoc() {
+    public function nhom_mon_hoc() {
         return $this->belongsToMany(NhomMonHoc::class,'mon_hoc_nhom_mon_hoc','id_mon_hoc','id_nhom_mon_hoc');
     }
 }

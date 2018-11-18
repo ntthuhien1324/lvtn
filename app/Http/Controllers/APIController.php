@@ -97,7 +97,7 @@ class APIController extends Controller
 
         //nếu đã đăng kí rồi thì không được đăng kí nữa
         $idMonHoc = LopHocPhan::where('id',$idHocPhanDangKy)->pluck('id_mon_hoc')->toArray();
-        $countMonHoc = KetQuaDangKy::where('id_mon_hoc', $idMonHoc['0'])->where('id_sv', $idUser)->where('thoi_gian_dang_ky', $idDotDangKy)->get()->count();
+        $countMonHoc = KetQuaDangKy::where('id_mon_hoc', $idMonHoc['0'])->where('id_sv', $idUser)->where('id_dot_dang_ky', $idDotDangKy)->get()->count();
         if($countMonHoc >= 1)
         {
             return response()->json([
@@ -108,7 +108,7 @@ class APIController extends Controller
 
         //lấy số lượng tín chỉ được đăng kí tối đa
         $tcMax = $dotDangKy->tc_max;
-        $idMonHoc = KetQuaDangKy::where('id_sv', $idUser)->where('thoi_gian_dang_ky', $idDotDangKy)->where('da_hoc', 2)->pluck('id_mon_hoc');
+        $idMonHoc = KetQuaDangKy::where('id_sv', $idUser)->where('id_dot_dang_ky', $idDotDangKy)->where('da_hoc', 2)->pluck('id_mon_hoc');
         $tcHienTaiSV = MonHoc::find($idMonHoc)->pluck('so_tin_chi')->sum();
         $idMonHoc = LopHocPhan::where('id',$idHocPhanDangKy)->pluck('id_mon_hoc');
         $tcMonHoc = MonHoc::find($idMonHoc)->pluck('so_tin_chi')->toArray();
@@ -167,8 +167,8 @@ class APIController extends Controller
             $ketQuaDangKy->tl_diem_cuoi_ky = $tiLe->ti_le_cuoi_ky;
             $ketQuaDangKy->id_dot_dang_ky = $idDotDangKy;
             if($ketQuaDangKy->save()) {
-                $ketQuaDangKy->sl_hien_tai = $slHienTai + 1;
-                if($ketQuaDangKy->save()) {
+                $dangKyMonHoc->sl_hien_tai = $slHienTai + 1;
+                if($dangKyMonHoc->save()) {
                     return response()->json([
                         'status'  => true,
                         'message' => trans('Đăng ký thành công'),

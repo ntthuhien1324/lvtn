@@ -300,7 +300,7 @@ class LopHocPhanController extends Controller
         $monHocs = [];
         foreach($hocKys as $hocKy) {
             $hocKy = HocKy::find($hocKy['id']);
-            array_push($monHocs, $hocKy->monHoc()->get(['id', DB::raw('ten as text')])) ;
+            array_push($monHocs, $hocKy->mon_hoc()->get(['id', DB::raw('ten as text')])) ;
         }
         return $monHocs;
     }

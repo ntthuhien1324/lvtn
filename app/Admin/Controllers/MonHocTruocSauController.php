@@ -137,7 +137,7 @@ class MonHocTruocSauController extends Controller
         $form = new Form(new MonHocTruocSau);
 
         $form->hidden('id','ID');
-        $monHoc = MonHoc::all()->sortByDesc('ten')->pluck('ten','id');
+        $monHoc = MonHoc::all()->sortBy('ten')->pluck('ten','id');
         $form->select('id_mon_hoc_truoc','Môn học trước')->options($monHoc)->rules('required');
         $form->select('id_mon_hoc_sau','Môn học sau')->options($monHoc)->rules('required');
         $form->saving(function (Form $form) {

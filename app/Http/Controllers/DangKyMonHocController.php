@@ -77,7 +77,7 @@ class DangKyMonHocController extends Controller
         $grid->so_tin_chi('Số tín chỉ')->style("text-align: center;");
         $grid->column('Nhóm môn')->display(function () {
             $monHoc = MonHoc::find($this->id);
-            $tenNhom = $monHoc->nhomMonHoc()->pluck('ten')->toArray();
+            $tenNhom = $monHoc->nhom_mon_hoc()->pluck('ten')->toArray();
             $nhomMonHoc = array_map(function ($tenNhom){
                 if($tenNhom) {
                     return "<span class='label label-primary'>{$tenNhom}</span>"  ;
@@ -393,33 +393,35 @@ $('.btnRegister').unbind('click').click(function() {
         confirmButtonColor: "#3c8dbc",
         confirmButtonText: "$confirm",
         closeOnConfirm: false,
-        cancelButtonText: "$cancel"
-    },
-    function(){
-        $.ajax({
-            method: 'get',
-            url: '/user/dang-ky-mon-hoc/' + id + '/ket-qua-dang-ky',
-            data: {
-                _method:'ketQuaDangKy',
-                _token:LA.token,
-            },
-            success: function (data) {
-                if (typeof data === 'object') {
-                    if (data.status) {
-                         swal({
-                              title: "Đăng ký thành công", 
-                              type: "success"
-                             },function() {
-                              location.reload();
-                             
-                         });
-                    } else {
-                        swal(data.message, '', 'error');
+        cancelButtonText: "$cancel",
+        preConfirm: function() {
+            return new Promise(function(resolve) {
+                $.ajax({
+                    method: 'get',
+                    url: '/user/dang-ky-mon-hoc/' + id + '/ket-qua-dang-ky',
+                    data: {
+                        _method:'ketQuaDangKy',
+                        _token:LA.token,
+                    },
+                    success: function (data) {
+                        if (typeof data === 'object') {
+                            if (data.status) {
+                                 swal({
+                                      title: "Đăng ký thành công", 
+                                      type: "success"
+                                     },function() {
+                                      location.reload();
+                                     
+                                 });
+                            } else {
+                                swal(data.message, '', 'error');
+                            }
+                        }
                     }
-                }
-            }
-        });
-    });
+                });
+            });
+        }
+    })
 });
 
 SCRIPT;

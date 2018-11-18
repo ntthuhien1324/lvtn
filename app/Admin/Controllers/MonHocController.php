@@ -128,13 +128,15 @@ class MonHocController extends Controller
     {
         $form = new Form(new MonHoc);
 
-        $form->text('id','Mã môn học');
+        $form->text('id','Mã môn học')->rules(function ($form){
+            return 'required|unique:mon_hoc,id,'.$form->model()->id.',id';
+        });
         $form->text('ten','Tên môn học')->rules('required');
         $form->number('so_tin_chi','Số tín chỉ')->rules('numeric|min:1|max:8');
         $form->select('id_ti_le_diem','Tỉ lệ điểm')
             ->options(TiLeDiem::all()->pluck('ten','id'))
             ->rules('required');
-        $form->multipleSelect('nhomMonHoc','Nhóm môn học')
+        $form->multipleSelect('nhom_mon_hoc','Nhóm môn học')
             ->options(NhomMonHoc::all()->pluck('ten','id'))
             ->rules('required');
         $form->hidden('Created at');
