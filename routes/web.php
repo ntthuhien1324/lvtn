@@ -26,6 +26,12 @@ Route::group(['prefix'=>'user', 'middleware'=>'sinhVienLogin'], function(Router 
 
     //Trang đăng ký môn học
     Route::group(['middleware' => ['dangKyMonHoc']], function (Router $router) {
+//        $router->get('dang-ky-mon-hoc/{id}', 'DangKyMonHocController@details');
         $router->resource('dang-ky-mon-hoc', DangKyMonHocController::class);
+
+        $router->get('dang-ky-mon-hoc/{id}/kiem-tra-truoc-sau','APIController@kiemTraTruocSau');
+        $router->get('dang-ky-mon-hoc/{id}/kiem-tra-song-song','APIController@kiemTraSongSong');
+        $router->get('dang-ky-mon-hoc/{id}/huy-dang-ky','APIController@huyDangKy');
+        $router->get('dang-ky-mon-hoc/{id}/ket-qua-dang-ky','APIController@ketQuaDangKy');
     });
 });

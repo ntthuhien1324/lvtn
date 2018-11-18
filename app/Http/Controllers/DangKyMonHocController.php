@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Extensions\ContentSinhVien;
 use App\Http\Extensions\Grid;
+use App\Models\Administrator;
 use App\Models\DotDangKy;
 use App\Models\HocKy;
 use App\Models\KetQuaDangKy;
@@ -12,7 +13,9 @@ use App\Models\MonHoc;
 use App\Models\MonHocHocKy;
 use App\Models\NamHoc;
 use App\Models\NhomMonHoc;
-use App\Models\SinhVien;
+use App\Models\PhongHoc;
+use App\Models\ThoiGianHoc;
+use Encore\Admin\Admin;
 use Encore\Admin\Controllers\HasResourceActions;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -161,233 +164,205 @@ class DangKyMonHocController extends Controller
 
         return $grid;
     }
-    protected function gridSubjectRegister($idSubjects)
+    protected function gridMonHocDangKy($idMonHoc)
     {
-        return User::GridUser(SubjectRegister::class, function (GridUser $grid) use ($idSubjects) {
-            $script = <<<SCRIPT
-        
-    // check subject Before After
+        $grid = new Grid(new LopHocPhan());
 
-            $.ajax({
-                method: 'get',
-                url: '/user/subject-register/$idSubjects/checkBeforeAtfer',
-                data: {
-                    _method:'checkBeforeAtfer',
-                    _token:LA.token,
-                },
-                success: function (data) {
-                    if (typeof data === 'object') {
-                        if (data.status == false) {
-                             swal({
-                                  type: 'error',
-                                  title:'Thông báo',
-                                  text: data.message,
-                                 },function() {
-                                    window.location.href= ('../../../user/subject-register');
-                             });
-                        } 
-                    }
-                }
-            });
+        $script = <<<SCRIPT
+    
+// Kiểm tra môn học trước - sau
 
-    //check subject parallel 
+$.ajax({
+    method: 'get',
+    url: '/user/dang-ky-mon-hoc/$idMonHoc/kiem-tra-truoc-sau',
+    data: {
+        _method:'kiemTraTruocSau',
+        _token:LA.token,
+    },
+    success: function (data) {
+        if (typeof data === 'object') {
+            if (data.status == false) {
+                 swal({
+                      type: 'error',
+                      title:'Thông báo',
+                      text: data.message,
+                     },function() {
+                        window.location.href= ('../../../user/dang-ky-mon-hoc');
+                 });
+            } 
+        }
+    }
+});
 
-            $.ajax({
-                method: 'get',
-                url: '/user/subject-register/$idSubjects/checkParallel',
-                data: {
-                    _method:'checkParallel',
-                    _token:LA.token,
-                },
-                success: function (data) {
-                    if (typeof data === 'object') {
-                        if (data.status == false) {
-                             swal({
-                                  type: 'error',
-                                  title:'Thông báo',
-                                  text: data.message,
-                                 },function() {
-                                    window.location.href= ('../../../user/subject-register');
-                             });
-                        } 
-                    }
-                }
-            });
+//check subject parallel 
+
+$.ajax({
+    method: 'get',
+    url: '/user/dang-ky-mon-hoc/$idMonHoc/kiem-tra-song-song',
+    data: {
+        _method:'kiemTraSongSong',
+        _token:LA.token,
+    },
+    success: function (data) {
+        if (typeof data === 'object') {
+            if (data.status == false) {
+                 swal({
+                      type: 'error',
+                      title:'Thông báo',
+                      text: data.message,
+                     },function() {
+                        window.location.href= ('../../../user/dang-ky-mon-hoc');
+                 });
+            } 
+        }
+    }
+});
 
 SCRIPT;
-            User::script($script);
-            $timeRegister = TimeRegister::where('status', 1)->orderBy('id', 'DESC')->first();
-            $grid->model()->where('id_subjects', $idSubjects)->where('id_time_register', $timeRegister->id);
-//            $grid->id('ID');
-            $grid->id('Mã học phần')->style("text-align: center;");
-            $grid->id_subjects('Môn học')->display(function ($idSubject) {
-                if ($idSubject) {
-                    return Subjects::find($idSubject)->name;
+        Admin::script($script);
+        $dotDangKy = DotDangKy::where('trang_thai', 1)->orderBy('id', 'DESC')->first();
+        $grid->model()->where('id_mon_hoc', $idMonHoc)->where('id_dot_dang_ky', $dotDangKy->id);
+        $grid->id('Mã học phần')->style("text-align: center;");
+        $grid->id_mon_hoc('Môn học')->display(function ($idMonHoc) {
+            if ($idMonHoc) {
+                return MonHoc::find($idMonHoc)->ten;
+            } else {
+                return '';
+            }
+        });
+        $grid->column('Phòng')->style("text-align: center;")->display(function () {
+            $idPhongHoc = ThoiGianHoc::where('id_hoc_phan_dang_ky', $this->id)->pluck('id_phong_hoc')->toArray();
+            $phong = PhongHoc::whereIn('id', $idPhongHoc)->pluck('ten')->toArray();
+            $phong = array_map(function ($phongHoc) {
+                return "<span class='label label-success'>{$phongHoc}</span>";
+            }, $phong);
+            return join('&nbsp;', $phong);
+        });
+        $grid->column('Buổi học')->style("text-align: center;")->display(function () {
+            $day = ThoiGianHoc::where('id_hoc_phan_dang_ky', $this->id)->pluck('ngay')->toArray();
+            $day = array_map(function ($day) {
+                switch ($day) {
+                    case 2:
+                        $day = 'Thứ 2';
+                        break;
+                    case 3:
+                        $day = 'Thứ 3';
+                        break;
+                    case 4:
+                        $day = 'Thứ 4';
+                        break;
+                    case 5:
+                        $day = 'Thứ 5';
+                        break;
+                    case 6:
+                        $day = 'Thứ 6';
+                        break;
+                    case 7:
+                        $day = 'Thứ 7';
+                        break;
+                    case 8:
+                        $day = 'Chủ nhật';
+                        break;
+                }
+
+                return "<span class='label label-success'>{$day}</span>";
+            }, $day);
+            return join('&nbsp;', $day);
+        });
+        $grid->column('Thời gian học')->style("text-align: center;")->display(function () {
+            $gioBatDau = ThoiGianHoc::where('id_hoc_phan_dang_ky', $this->id)->pluck('gio_bat_dau')->toArray();
+            $gioKetThuc = ThoiGianHoc::where('id_hoc_phan_dang_ky', $this->id)->pluck('gio_ket_thuc')->toArray();
+            $time = array_map(function ($gioBatDau, $gioKetThuc) {
+                return "<span class='label label-success'>{$gioBatDau} - {$gioKetThuc}</span>";
+            }, $gioBatDau, $gioKetThuc);
+            return join('&nbsp;', $time);
+        });
+        $grid->id_gv('Giảng viên')->display(function ($id_user_teacher) {
+            if ($id_user_teacher) {
+                $teacher = Administrator::find($id_user_teacher);
+                if ($teacher) {
+                    return $teacher->ten;
                 } else {
                     return '';
                 }
-            });
-            $grid->column('Phòng')->style("text-align: center;")->display(function () {
-                $idClassroom = TimeStudy::where('id_subject_register', $this->id)->pluck('id_classroom')->toArray();
-                $classRoom = Classroom::whereIn('id', $idClassroom)->pluck('name')->toArray();
-                $classRoom = array_map(function ($classRoom) {
-                    return "<span class='label label-success'>{$classRoom}</span>";
-                }, $classRoom);
-                return join('&nbsp;', $classRoom);
-            });
-            $grid->column('Buổi học')->style("text-align: center;")->display(function () {
-                $day = TimeStudy::where('id_subject_register', $this->id)->pluck('day')->toArray();
-                $day = array_map(function ($day) {
-                    switch ($day) {
-                        case 2:
-                            $day = 'Thứ 2';
-                            break;
-                        case 3:
-                            $day = 'Thứ 3';
-                            break;
-                        case 4:
-                            $day = 'Thứ 4';
-                            break;
-                        case 5:
-                            $day = 'Thứ 5';
-                            break;
-                        case 6:
-                            $day = 'Thứ 6';
-                            break;
-                        case 7:
-                            $day = 'Thứ 7';
-                            break;
-                        case 8:
-                            $day = 'Chủ nhật';
-                            break;
-                    }
+            } else {
+                return '';
+            }
+        });
+        $grid->sl_hien_tai('Số lượng hiện tại')->style("text-align: center;");
+        $grid->sl_max('Số lượng tối đa')->style("text-align: center;");
+        $grid->ngay_bat_dau('Ngày bắt đầu')->style("text-align: center;");
+        $grid->ngay_ket_thuc('Ngày kết thúc')->style("text-align: center;");
 
-                    return "<span class='label label-success'>{$day}</span>";
-                }, $day);
-                return join('&nbsp;', $day);
-            });
-            $grid->column('Thời gian học')->style("text-align: center;")->display(function () {
-                $timeStart = TimeStudy::where('id_subject_register', $this->id)->pluck('time_study_start')->toArray();
-                $timeEnd = TimeStudy::where('id_subject_register', $this->id)->pluck('time_study_end')->toArray();
-                $time = array_map(function ($timeStart, $timeEnd) {
-                    return "<span class='label label-success'>{$timeStart} - {$timeEnd}</span>";
-                }, $timeStart, $timeEnd);
-                return join('&nbsp;', $time);
-            });
-            $grid->id_user_teacher('Giảng viên')->display(function ($id_user_teacher) {
-                if ($id_user_teacher) {
-                    $teacher = UserAdmin::find($id_user_teacher);
-                    if ($teacher) {
-                        return $teacher->name;
-                    } else {
-                        return '';
-                    }
-                } else {
-                    return '';
-                }
-            });
-            $grid->qty_current('Số lượng hiện tại')->style("text-align: center;");
-            $grid->qty_max('Số lượng tối đa')->style("text-align: center;");
-            $grid->date_start('Ngày bắt đầu')->style("text-align: center;");
-            $grid->date_end('Ngày kết thúc')->style("text-align: center;");
-
-            $grid->disableExport();
-            $grid->disableCreation();
-            $grid->disableExport();
-            $grid->disableRowSelector();
-            $grid->disableFilter();
-            $grid->filter(function($filter){
-                $filter->disableIdFilter();
-                $filter->like('id', 'Mã học phần');
-//                $filter->in('id_subjects', 'Tên môn học')->multipleSelect(Subjects::all()->pluck('name', 'id'));
-                $filter->where(function ($query) {
-                    $input = $this->input;
-                    $query->whereIn('id_subjects', $input);
-                }, 'Tên môn học')->multipleSelect(Subjects::all()->pluck('name', 'id'));
-                $filter->in('id_user_teacher', 'Giảng viên')->multipleSelect(UserAdmin::where('type_user', 0)->pluck('name', 'id'));
-                $filter->like('qty_current', 'SL hiện tại');
-                $filter->date('date_start', 'Ngày bắt đầu');
-                $filter->date('date_end', 'Ngày kết thúc');
-                $filter->between('created_at', 'Tạo vào lúc')->datetime();
-            });
-            $grid->actions(function ($actions) use ($idSubjects){
-                $actions->disableEdit();
-                $actions->disableDelete();
-                $actions->append('<a href="javascript:void(0);" data-id="' . $this->getKey() . '"  class="btn btn-danger btnTotal btnCancel" style="display: none;text-align:center;"><i class="glyphicon glyphicon-trash"></i> &nbsp Hủy bỏ </a>');
-//
-//                $arrIdSubjectsList=SubjectRegister::where('id_subjects',$idSubjects)->pluck('id')->toArray();
-//                $arrIdResultRegister=ResultRegister::get()->pluck('id_subject_register')->toArray();
-                $user = Auth::user();
-                $idUser = $user->id;
-                $timeRegister = TimeRegister::where('status', 1)->orderBy('id', 'DESC')->first();
-                $idTimeRegister = $timeRegister->id;
-                $idSubjectsList=ResultRegister::where('id_subject',$idSubjects)->where('id_user_student', $idUser)->where('time_register', $idTimeRegister)->first();
-//                dd($arrIdSubjectsList);
-//                foreach ($arrIdResultRegister as $valueResultRegisters){
-//                    foreach ($arrIdSubjectsList as $valueSubjectRegisters){
-//                        if($valueResultRegisters==$valueSubjectRegisters)
-//                        {
-//                            $valueCK = $valueResultRegisters;
-                if($idSubjectsList) {
-                    $codeSubjectRegister = $idSubjectsList->id_subject_register;
-                    $script = <<<SCRIPT
-                             $('.btnRegister').each(function(){
-                                var idRegister =$(this).data('id');
-                                if(idRegister == '$codeSubjectRegister') {
-//                                    $('[data-id='+idRegister+']').hide();
-                                    $('.btnCancel[data-id='+idRegister+']').css("display", "block");
-//                                 $('.btnCancel').find('a[data-id='+idRegister+']').css("display", "block");
-                                }
-                                else {
-                                    $('.btnRegister[data-id='+idRegister+']').css("display", "block");
-                                }
-                             });
+        $grid->disableExport();
+        $grid->disableCreation();
+        $grid->disableExport();
+        $grid->disableRowSelector();
+        $grid->disableFilter();
+        $grid->actions(function ($actions) use ($idMonHoc){
+            $actions->disableEdit();
+            $actions->disableDelete();
+            $actions->disableView();
+            $actions->append('<a href="javascript:void(0);" data-id="' . $this->getKey() . '"  class="btn btn-danger btnTotal btnCancel" style="display: none;text-align:center;"><i class="glyphicon glyphicon-trash"></i> &nbsp Hủy bỏ </a>');
+            $user = Auth::user();
+            $idUser = $user->id;
+            $dotDangKy = DotDangKy::where('trang_thai', 1)->orderBy('id', 'DESC')->first();
+            $idDotDangKy = $dotDangKy->id;
+            $monHocDangKy = KetQuaDangKy::where('id_mon_hoc',$idMonHoc)
+                ->where('id_sv', $idUser)
+                ->where('id_hoc_phan_dang_ky', $idDotDangKy)
+                ->first();
+            if($monHocDangKy) {
+                $idLopHocPhan = $monHocDangKy->id_hoc_phan_dang_ky;
+                $script = <<<SCRIPT
+$('.btnRegister').each(function(){
+    var idRegister =$(this).data('id');
+    if (idRegister == '$idLopHocPhan') {
+        $('.btnCancel[data-id='+idRegister+']').css("display", "block");
+    } else {
+        $('.btnRegister[data-id='+idRegister+']').css("display", "block");
+    }
+});
 SCRIPT;
-                    User::script($script);
-                } else {
-                    $script = <<<SCRIPT
-                                    $('.btnRegister').css("display", "block");
-
+                Admin::script($script);
+            } else {
+                $script = <<<SCRIPT
+$('.btnRegister').css("display", "block");
 SCRIPT;
-                    User::script($script);
+                Admin::script($script);
 
-                }
+            }
 
-//                        }
-//                    }
-//                }
-
-                //button Register (nút đăng kí)
-                $actions->append('<a href="javascript:void(0);" data-id="' . $this->getKey() . '"  class="btn btn-primary btnRegister btnTotal" style="display: none;text-align:center;"  ><i class="fa fa-pencil-square-o"></i> &nbsp Đăng ký </a>');
+            //button Register (nút đăng kí)
+            $actions->append('<a href="javascript:void(0);" data-id="' . $this->getKey() . '"  class="btn btn-primary btnRegister btnTotal" style="display: none;text-align:center;"  ><i class="fa fa-pencil-square-o"></i> &nbsp Đăng ký </a>');
 
 
-            });
+        });
 
-            $registerConfirm = trans('Bạn có chắc chắn muốn đăng ký không?');
-            $confirm = trans('Đăng ký');
-            $cancel = trans('Hủy bỏ');
-            $cancelConfirm = trans('Bạn có chắc chắn muốn hủy không?');
-            $confirmDelete = trans('Hủy đăng ký');
-//            $cancel = trans('Hủy bỏ');
+        $registerConfirm = trans('Bạn có chắc chắn muốn đăng ký không?');
+        $confirm = trans('Đăng ký');
+        $cancel = trans('Hủy bỏ');
+        $cancelConfirm = trans('Bạn có chắc chắn muốn hủy không?');
+        $confirmDelete = trans('Hủy đăng ký');
 
-            $script = <<<SCRIPT
+        $script = <<<SCRIPT
 $('.btnCancel').unbind('click').click(function() {
     var id = $(this).data('id');
     swal({
-      title: "$cancelConfirm",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dd4b39",
-      confirmButtonText: "$confirmDelete",
-      closeOnConfirm: false,
-      cancelButtonText: "$cancel"
+        title: "$cancelConfirm",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#dd4b39",
+        confirmButtonText: "$confirmDelete",
+        closeOnConfirm: false,
+        cancelButtonText: "$cancel"
     },
     function(){
         $.ajax({
             method: 'get',
-            url: '/user/subject-register/' + id + '/delete-register',
+            url: '/user/dang-ky-mon-hoc/' + id + '/huy-dang-ky',
             data: {
-                _method:'deleteRegister',
+                _method:'huyDangKy',
                 _token:LA.token,
             },
             success: function (data) {
@@ -409,28 +384,23 @@ $('.btnCancel').unbind('click').click(function() {
     });
 });
 
-
-
-
-
-
 $('.btnRegister').unbind('click').click(function() {
     var id = $(this).data('id');
     swal({
-      title: "$registerConfirm",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3c8dbc",
-      confirmButtonText: "$confirm",
-      closeOnConfirm: false,
-      cancelButtonText: "$cancel"
+        title: "$registerConfirm",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3c8dbc",
+        confirmButtonText: "$confirm",
+        closeOnConfirm: false,
+        cancelButtonText: "$cancel"
     },
     function(){
         $.ajax({
             method: 'get',
-            url: '/user/subject-register/' + id + '/result-register',
+            url: '/user/dang-ky-mon-hoc/' + id + '/ket-qua-dang-ky',
             data: {
-                _method:'resultRegister',
+                _method:'ketQuaDangKy',
                 _token:LA.token,
             },
             success: function (data) {
@@ -453,33 +423,27 @@ $('.btnRegister').unbind('click').click(function() {
 });
 
 SCRIPT;
-            User::script($script);
-        });
+        Admin::script($script);
+
+        return $grid;
     }
 
-    public function details($id)
+    public function show($id,ContentSinhVien $content)
     {
-        return User::content(function (ContentUser $content) use ($id) {
-            $subject = Subjects::findOrFail($id);
-            $content->header('Môn học');
-            $content->description($subject->name);
-            $content->breadcrumb(
-                ['text' => 'Đăng kí môn học', 'url' => '../user/subject-register'],
-                ['text' => $subject->name, 'url' => '../user/subject-register/'.$id.'/deltails']
-            );
-            $content->body($this->detailsView($id));
-        });
+        $monHoc = MonHoc::findOrFail($id);
+        return $content
+            ->header('Môn học')
+            ->description($monHoc->ten)
+            ->body($this->detail($id));
     }
 
-    public function detailsView($id)
+    public function detail($id)
     {
-//        $form = $this->form()->view($id);
-        $gridSubject_Register = $this->gridSubjectRegister($id)->render();
+        $gridMonHocDangKy = $this->gridMonHocDangKy($id)->render();
         return view('vendor.details',
             [
-                'template_body_name' => 'User.SubjectRegister.info',
-//                'form' => $form,
-                'gridSubjectRegister' => $gridSubject_Register
+                'template_body_name' => 'user.mon_hoc_dang_ky.info',
+                'gridMonHocDangKy' => $gridMonHocDangKy
 
             ]
         );

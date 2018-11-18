@@ -1,0 +1,1 @@
+@include('user.mon_hoc_dang_ky.info_view_dang_ky')
