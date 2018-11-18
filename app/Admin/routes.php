@@ -61,6 +61,8 @@ Route::group([
 
     //regionRoute Giảng viên
     $router->resource('giang-vien/lop',GiangVienController::class);
+    //thông tin lớp học phần
+    $router->get('giang-vien/thong-tin-sinh-vien/{id}','ThongTinSinhVienController@show');
     //endregion
 
 });
