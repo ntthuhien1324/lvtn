@@ -23,6 +23,7 @@ Route::group(['prefix'=>'user', 'middleware'=>'sinhVienLogin'], function(Router 
 
     //Trang chủ sau khi đăng nhập
     $router->resource('sinh-vien', UserSinhVienController::class);
+    $router->resource('thong-tin',ThongTinSinhVienController::class);
 
     $router->resource('ket-qua-dang-ky',KetQuaDangKyController::class);
 
