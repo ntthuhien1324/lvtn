@@ -4,7 +4,8 @@ use App\Models\LopHocPhan;
 use App\Models\MonHoc;
 use App\Models\DotDangKy;
 use App\Models\ThoiGianHoc;
-use App\Models\TimeTable;
+use App\Models\Administrator;
+use App\Models\PhongHoc;
 
 $idUser = Auth::user()->id;
 $dotDangKy = DotDangKy::where('trang_thai', 1)->orderBy('id', 'DESC')->first();
@@ -44,20 +45,23 @@ $arrTietHoc = collect($arrTietHoc)->map(function($x){ return (array) $x; })->toA
                         $startTime = strtotime($gioHoc['gio_bat_dau']);
                         $endTime = strtotime($gioHoc['gio_ket_thuc']);
                         if ($gioHoc['ngay'] == ($key + 2) && $start >= $startTime && $end <= $endTime) {
-                            $idMonHoc = LopHocPhan::where('id', $gioHoc['id_hoc_phan_dang_ky'])->first();
-                            if (!empty($idMonHoc)) {
-                                $idMonHoc = $idMonHoc->id_mon_hoc;
+                            $lopHocPhan = LopHocPhan::where('id', $gioHoc['id_hoc_phan_dang_ky'])->first();
+                            if (!empty($lopHocPhan)) {
+                                $idMonHoc = $lopHocPhan->id_mon_hoc;
+                                $idGV = $lopHocPhan->id_gv;
+                                $idPhongHoc = $gioHoc['id_phong_hoc'];
+                                $info = $idMonHoc . ',' . $idGV . ',' . $idPhongHoc;
                                 $isExisted = false;
                                 if(isset($arrayTable[$key])) {
                                     foreach ($arrayTable[$key] as $pSubKey => $item) {
-                                        if (isset($item[$idMonHoc])) {
-                                            $arrayTable[$key][$pSubKey][$idMonHoc] = $arrayTable[$key][$pSubKey][$idMonHoc] + 1;
+                                        if (isset($item[$info])) {
+                                            $arrayTable[$key][$pSubKey][$info] = $arrayTable[$key][$pSubKey][$info] + 1;
                                             $isExisted = true;
                                         }
                                     }
                                 }
                                 if (!$isExisted) {
-                                    $arrayTable[$key][$keyTietHoc][$idMonHoc] = 1;
+                                    $arrayTable[$key][$keyTietHoc][$info] = 1;
                                 } else {
                                     $arrayTable[$key][$keyTietHoc] = false;
                                 }
@@ -75,10 +79,17 @@ $arrTietHoc = collect($arrTietHoc)->map(function($x){ return (array) $x; })->toA
                     if(isset($arrayTable[$dayKey][$keyTietHoc])) {
                         if ($arrayTable[$dayKey][$keyTietHoc] && count($arrayTable[$dayKey][$keyTietHoc]) > 0) {
                             $count = 1;
-                            $idMonHoc = array_keys($arrayTable[$dayKey][$keyTietHoc])[0];
+                            $info = array_keys($arrayTable[$dayKey][$keyTietHoc])[0];
+                            $arrInfo = explode(',',$info);
+                            $idMonHoc = $arrInfo[0];
+                            $idGV = $arrInfo[1];
+                            $idPhongHoc = $arrInfo[2];
                             $count = array_values($arrayTable[$dayKey][$keyTietHoc])[0];
                             $monHoc = MonHoc::where("id", $idMonHoc)->first();
-                            echo "<td rowspan='$count' style='background-color:#ecf0f1;border-color:Gray;border-width:1px;border-style:solid;height:22px;width:110px;color:Teal;text-align:center;font-weight:bold;' >$monHoc->ten</td>";
+                            $gv = Administrator::find($idGV);
+                            $phong = PhongHoc::find($idPhongHoc);
+                            $tkb = $monHoc->ten . ' (GV: ' . $gv->name . ') (Phòng: ' . $phong->ten . ')';
+                            echo "<td rowspan='$count' style='background-color:#ecf0f1;border-color:Gray;border-width:1px;border-style:solid;height:22px;width:110px;color:Teal;text-align:center;font-weight:bold;' >$tkb</td>";
                         } else if(is_array($arrayTable[$dayKey][$keyTietHoc])){// nếu như là array thì render
                             echo "<td rowspan='1' class='td-object'></td>";
                         }

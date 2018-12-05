@@ -281,7 +281,7 @@ SCRIPT;
             if ($id_user_teacher) {
                 $teacher = Administrator::find($id_user_teacher);
                 if ($teacher) {
-                    return $teacher->ten;
+                    return $teacher->name;
                 } else {
                     return '';
                 }
