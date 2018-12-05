@@ -24,6 +24,10 @@ Route::group(['prefix'=>'user', 'middleware'=>'sinhVienLogin'], function(Router 
     //Trang chủ sau khi đăng nhập
     $router->resource('sinh-vien', UserSinhVienController::class);
 
+    $router->resource('ket-qua-dang-ky',KetQuaDangKyController::class);
+
+    $router->get('tkb-ket-qua/{id}', 'APIController@ketQuaTKB');
+
     //Trang đăng ký môn học
     Route::group(['middleware' => ['dangKyMonHoc']], function (Router $router) {
 //        $router->get('dang-ky-mon-hoc/{id}', 'DangKyMonHocController@details');
