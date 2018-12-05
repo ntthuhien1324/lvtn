@@ -33,5 +33,7 @@ Route::group(['prefix'=>'user', 'middleware'=>'sinhVienLogin'], function(Router 
         $router->get('dang-ky-mon-hoc/{id}/kiem-tra-song-song','APIController@kiemTraSongSong');
         $router->get('dang-ky-mon-hoc/{id}/huy-dang-ky','APIController@huyDangKy');
         $router->get('dang-ky-mon-hoc/{id}/ket-qua-dang-ky','APIController@ketQuaDangKy');
+
+        $router->resource('dang-ky-hoc-lai',DangKyHocLaiController::class);
     });
 });
