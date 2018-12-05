@@ -50,12 +50,25 @@ class KetQuaDangKyController extends Controller
         $arrIdDotDangKy = KetQuaDangKy::where('id_sv',$id)->distinct()->pluck('id_dot_dang_ky')->toArray();
         $options = DotDangKy::whereIn('id',$arrIdDotDangKy)->orderBy('id', 'DESC')->pluck('ten', 'id')->toArray();
         $form->select('id_dot_dang_ky', 'Thời gian')->options($options)->attribute(['id' => 'ketQuaDangKy']);
-        $form->disableReset();
-        $form->disableSubmit();
-        $form->tools(function (Form\Tools $tools) {
-            $tools->disableListButton();
-        });
+        $form->footer(function ($footer) {
+            // disable reset btn
+            $footer->disableReset();
 
+            // disable `View` checkbox
+            $footer->disableViewCheck();
+
+            // disable `Continue editing` checkbox
+            $footer->disableEditingCheck();
+
+            $footer->disableSubmit();
+
+        });
+        $form->tools(function (Form\Tools $tools) {
+            $tools->disableList();
+            $tools->disableView();
+            $tools->disableDelete();
+        });
+//        return $form;
     }
     protected function grid()
     {

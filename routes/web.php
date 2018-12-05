@@ -26,7 +26,10 @@ Route::group(['prefix'=>'user', 'middleware'=>'sinhVienLogin'], function(Router 
 
     $router->resource('ket-qua-dang-ky',KetQuaDangKyController::class);
 
-    $router->get('tkb-ket-qua/{id}', 'APIController@ketQuaTKB');
+    $router->resource('mon-hoc-song-song', MonHocSongSongController::class);
+    $router->resource('mon-hoc-truoc-sau', MonHocTruocSauController::class);
+
+    $router->resource('gop-y',GopYController::class);
 
     //Trang đăng ký môn học
     Route::group(['middleware' => ['dangKyMonHoc']], function (Router $router) {

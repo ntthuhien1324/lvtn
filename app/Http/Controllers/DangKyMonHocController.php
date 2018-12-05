@@ -450,10 +450,4 @@ SCRIPT;
             ]
         );
     }
-
-    public function timetable()
-    {
-
-        return view('User.SubjectRegister.timetable');
-    }
 }
