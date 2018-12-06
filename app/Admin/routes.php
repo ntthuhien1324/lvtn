@@ -65,6 +65,9 @@ Route::group([
     $router->get('giang-vien/thong-tin-sinh-vien/{id}','ThongTinSinhVienController@show');
     $router->get('giang-vien/lop-hoc-phan','GiangVienController@lopHocPhan');
     $router->get('giang-vien','GiangVienController@lopHocPhan');
+    //quản lý điểm
+    $router->resource('giang-vien/diem',DiemController::class);
+    $router->resource('giang-vien/quan-ly-diem',QuanLyDiemController::class);
     //endregion
 
 });
