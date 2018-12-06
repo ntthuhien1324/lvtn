@@ -27,6 +27,8 @@ Route::group(['prefix'=>'user', 'middleware'=>'sinhVienLogin'], function(Router 
 
     $router->resource('ket-qua-dang-ky',KetQuaDangKyController::class);
 
+    $router->resource('xem-diem',DiemMonHocController::class);
+
     $router->resource('mon-hoc-song-song', MonHocSongSongController::class);
     $router->resource('mon-hoc-truoc-sau', MonHocTruocSauController::class);
 

@@ -201,7 +201,7 @@
             // labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
             labels: <?php echo $dotDangKy ?>,
             datasets: [{
-                label: 'Lượt đăng ký',
+                label: 'Lượt đăng ký ',
                 // data: [12, 19, 3, 5, 2, 3],
                 data: {{$dataDotDangKy}},
                 backgroundColor: [
