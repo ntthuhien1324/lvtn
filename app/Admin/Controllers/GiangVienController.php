@@ -205,7 +205,7 @@ class GiangVienController extends Controller
 
         });
 
-        return $form;
+//        return $form;
 
     }
 
@@ -221,7 +221,7 @@ class GiangVienController extends Controller
             $grid->model()->where('id', '-1');
         }
         $grid->id('Mã học phần')->display(function ($name) {
-            return '<a href="/admin/giang-vien/lop-hoc-phan/' . $this->id . '">' . $name . '</a>';
+            return '<a href="/admin/giang-vien/quan-ly-diem/' . $this->id . '">' . $name . '</a>';
         });
         $grid->id_mon_hoc('Môn học')->display(function ($idMonHoc) {
             if ($idMonHoc) {
